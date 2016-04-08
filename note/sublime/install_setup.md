@@ -12,11 +12,14 @@
 #### 4. Ctrl + Shift + p ,输入可以找到Install Package,回车之后就可以安装插件了
 ---
 ## 3.安装常用插件
+
 #### 1.MarkDown
 - 在浏览器中实时浏览 OmniMarkupPreviwer
 - 语法高亮 MarkDown Editing
+
 #### 2.中文支持 ConvertToUTF8
 ---
+
 ## 4.常用配置
 - Preferences -> Settings - User
 ``` json
