@@ -1,0 +1,8 @@
+[mipsel]
+./configure --host=mipsel-linux  CC=mipsel-linux-gcc --prefix=/home/libcurl_mipse
+ --enable-shared=no --enable-static=yes
+
+make 
+make install
+因为只移植了.a的ssl库，所以 --enable-shared=no
+如果只是http  --without-ssl

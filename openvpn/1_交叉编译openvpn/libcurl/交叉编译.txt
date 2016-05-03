@@ -1,0 +1,10 @@
+Œ“÷ª”√http
+
+
+--with-PACKAGE=no
+--enable-FEATURE=no
+--enable-http
+--prefix= /root/WORK/libmite/libcurl/curl-7.47.1/arm
+CC=arm-none-linux-gnueabi-gcc 
+--host=arm-linux 
+--static

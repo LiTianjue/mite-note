@@ -1,0 +1,47 @@
+/***************************************
+	交叉编译lzo
+****************************************/
+ ./configure --host=arm-none-linux-gnueabi CC=arm-none-linux-gnueabi-gcc -target=arm-none-linux-gnueabi --prefix=/root/WORK/kedaVPN/arm-vpn/lzo-2.06/lzo-arm-lib
+
+通过--prefix 指定安装目录
+
+然后make && make install
+
+把安装目录下的 blzo2.a和liblzo2.la的两个文件名做个ln，更名为liblzo.a和liblzo.la
+
+
+/***************************************
+	交叉编译openssl
+****************************************/
+1.   ./Configure no-asm no-shared --prefix=/root/WORK/kedaVPN/arm-vpn/openssl-OpenSSL_1_0_1r/arm-openssl-lib os:arm-none-linux-gnueabi-gcc
+
+no-asm arm汇编不一定支持，干掉
+no-shared  shared提示不支持
+
+
+/*****************************************
+	交叉编译openvpn
+	http://paguilar.org/?p=303
+******************************************/
+ ./configure --host=arm-none-linux-gnueabi --enable-password-save CC=arm-none-linux-gnueabi-gcc --target=arm-none-linux-gnueabi --with-ssl-headers=/root/WORK/kedaVPN/arm-vpn/lib/arm-openssl-lib/include/ --with-ssl-lib=/root/WORK/kedaVPN/arm-vpn/lib/arm-openssl-lib/lib --with-lzo-headers=/root/WORK/kedaVPN/arm-vpn/lib/lzo-arm-lib/include/lzo --with-lzo-lib=/root/WORK/kedaVPN/arm-vpn/lib/lzo-arm-lib/lib
+
+/-------------------------------------/
+网上给的用了--with-lzo-lib选项，新版中并没有这个选项
+而是使用了 LZO_CFLAGS和 LZO_LIBS
+同样的openssl库也需要指定
+OPENSSL_CRYPTO_CFLAGS
+              
+OPENSSL_CRYPTO_LIBS
+           
+OPENSSL_SSL_CFLAGS
+
+OPENSSL_SSL_LIBS
+
+ 
+./configure --host=arm-none-linux-gnueabi --enable-password-save CC=arm-none-linux-gnueabi-gcc --target=arm-none-linux-gnueabi LZO_CFLAGS="-I../lib/lzo-arm-lib/include/" LZO_LIBS="-L../lib/lzo-arm-lib/lib -llzo2" --enable-small --disable-plugins --disable-debug
+
+使用--disable-plugins --disable-debug避开pam库的需要
+
+
+
+
