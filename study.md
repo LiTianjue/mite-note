@@ -92,4 +92,9 @@
 	2.当不用标准的方式（*）比如用int表示一个指针，
 	  32位和64位地址长度不同会造成段错误
 
-27.
+27. glibc版本过低导致程序不能运行
+	#!/bin/sh
+	echo "deb http://ftp.debian.org/debian sid main" >> /etc/apt/sources.list
+	apt-get update
+	apt-get -t sid install libc6 libc6-dev libc6-dbg
+	echo "Please remember to hash out sid main from your sources list. /etc/apt/sources.list"""""
