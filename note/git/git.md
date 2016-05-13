@@ -63,6 +63,14 @@
 	
 	//补丁
 	git diff > patch.txt
+	git diff HEAD HEAD~ > patch.txt
+	//打补丁
+	git apply < patch.txt
 
+
+4.使用分支来工作
+	git branch <bname>
+	//创建不以当前版本为起点的分支
+	git branch <name> HEAD^^
 
 
