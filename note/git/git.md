@@ -73,4 +73,40 @@
 	//创建不以当前版本为起点的分支
 	git branch <name> HEAD^^
 
+	//分支切换
+	git branch -b bname
+	//创建并切换分支
+	git checkout -b newbranch
+
+	//在分支中完成代码的修改，切换回主分支进行合并和删除分支
+	git checkout master
+	git merge bname
+	git branch -d bname
+	git branch
+
+5.服务器
+	git clone 之后，可以用origin 来代替服务器地址
+	用git remote 来查看服务器相关信息
+	git remote show origin
+
+	创建新的remote 设置
+	git remote add project1 git@git.com
+
+	在提交代码之前，首先要确认相关的更新已经合并到主分支master
+	还要确认master的代码是服务器的最新代码，确保提交不冲突
+	git pull origin master
+	git push origin master
+
+	提交标签到服务器
+	git push origin master
+	git push origin --tags
+
+6.管理
+	//检查损坏情况
+	git fsck
+	//清理无用的数据
+	git gc
+
+
+
 
