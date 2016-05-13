@@ -89,7 +89,7 @@
 	用git remote 来查看服务器相关信息
 	git remote show origin
 
-	创建新的remote 设置
+	创建新的remote 设置 ,这样就可以使用project1来代替远程地址
 	git remote add project1 git@git.com
 
 	在提交代码之前，首先要确认相关的更新已经合并到主分支master
@@ -108,5 +108,14 @@
 	git gc
 
 
+7.创建分支版本
+	git branch NewBranch
+	git checkout NewBranch
+	//发布新分支到github上
+	git push origin NewBranch
+	//删除本地分支
+	git branch -d NewBranch
+	//删除远程的分支
+	git push origin :NewBranch
 
 
