@@ -1,0 +1,166 @@
+基本数据类型是uint8
+数据按网络字节序或者是大端存储
+opaque ：单字节实体包含未解释的数据
+
+算法属性
+4中算法运算
+*数字签名
+	不可还原，
+	RSA 36字节的结构包含2种被私钥加密的hash(SHA,MD5)
+	编码规则按照 PKCS#1 block type 1
+	DSS 20字节 数据：直接加密SHA，生成2个数据 r,s作为签名数据
+*流加密
+
+*块加密
+
+*公钥加密算法
+	公钥加密，私钥解密
+	RSA 加密数据通过PKCS #1 block type2 编码 [PKCS1A]
+	sream-ciphered struct {
+		uint8 field1;
+		uint8 field2;
+		digitally-signed opaque.hash[20];
+	}UserType;
+
+
+HMAC
+TLS 记录层和握手需要 keyed MAC
+MAC 是密钥的摘要数据
+HMAC 可以用于多种摘要算法，TLS 在握手阶段用两种不同的摘要算法MD5 SHA-1
+表示为 HMAC_MD5(secret,data)
+	HMAC_SHA(secrte,data)
+
+其他额外的hash算法通过算法套件引入用于保护记录层数据
+MD5和SHA-1是硬性要求
+ 
+ pseudo-random  伪随机数算法（PRF）
+ 输入一个密钥，一个随即种子，一个标签，产生一个任意长度的输出
+为了让随机数更加的安全，引入了扩展hash算法
+P_hash(secret,data) 
+通过反复迭代直至产生要求长度的数据
+比如 P_SHA-1 要产生64字节的的数据，需要迭代4次产生80字节数据，多出来的16字节被截断
+TLS的伪随机数算法，将密钥分为两段，一段采用P_MD5  一段采用P_SHA-1然后做异或运算将两者组合
+如果密钥是一段长奇数（odd number）第一段(S1)的最后一个字节将和第二段(S2的头一个字节相同
+1234567 拆两段就是 1234  - 4567
+
+PRF(secret,label,seed) = P_MD5（S1,label,seed） XOR
+			   P_SHA-1(S2,label,seed)
+label是 ASCII字符串，没有长度字节和空字符
+由于两者有不同的hash结果MD5 16字节，SHA-1有 20字节，他们的迭代边界将不会相同，如果要生成80个字节的输出，
+MD5 要迭代5次，SHA-1迭代4次
+
+
+TLS记录层协议是一个分层协议，在每一层，信息包含
+长度 描述 内容
+记录层协议负责将数据封装为易于管理的块用于传输，压缩算法是可选的，适用于MAC，加密，传输结果
+接收数据 解密，确认，解压，分解，然后传输到更高的层级
+
+
+TLS协议中描述了4种client的记录层协议
+握手协议
+告警协议
+密钥规则改变协议
+应用数据协议
+
+为了扩展TLS协议，在记录层协议中支持添加record type
+新的记录层类型的值要大于4种协议的ContentType
+而且要符合RFC 2434的标准（IANA Considerations for ContentType values.）
+如果出现不认识的记录层协议类型，TLS会忽略掉它
+
+
+连接状态
+指示记录层协议的运行环境
+如果指定了压缩算法，加密算法或者MAC算法，
+读写端都可以获取 MAC密钥，块加密密钥
+4 种连接状态
+当前读写状态
+ 待读写状态
+等待状态的安全参数由握手协议设置
+密钥规则改变协议可以选择当前状态或者未决状态
+在这种情况下，当前状态会被置为待读写状态
+使用一个未被安全参数初始化的状态是非法的
+
+安全参数的设置
+	连接终止（connection end)
+	enum {server , client } ConnectionEnd
+
+	加密算法信息
+	enum {null , rc4 , rc2 , des , 3des , des40 , idea , aes} BulkCipherAlgorithm
+	enum { stream , block } CipherType
+
+	MAC算法信息
+	enum  { null , md5 , sha } MACAlgorithm
+
+	压缩算法信息
+	enum {null(0), (255) } CompressionMethod
+
+	主密钥 48字节的共享密钥
+	32 字节的客户端随机数
+	32字节的服务器端随机数
+ 	struct {
+           	ConnectionEnd          entity;
+           	BulkCipherAlgorithm    bulk_cipher_algorithm;
+           	CipherType             cipher_type;
+           	uint8                  key_size;
+           	uint8                  key_material_length;
+           	MACAlgorithm           mac_algorithm;
+           	uint8                  hash_size;
+           	CompressionMethod      compression_algorithm;
+           	opaque                 master_secret[48];
+           	opaque                 client_random[32];
+           	opaque                 server_random[32];
+       	} SecurityParameters;
+
+       	记录层协议会使用安全参数生成4个项目
+       	client write MAC secrte  	//客户端写校验密钥
+       	server write MAC secrte  	//服务端写校验密钥
+       	client write key  			// 客户端写密钥
+       	server write key 		//服务端写密钥
+
+       	密钥生成后，连接状态就可以改变为当前状态
+
+ 	每个连接状态包含以下元素
+ 	压缩状态
+ 	算法状态
+ 	MAC 密钥
+ 	序列号 sequence number (uint 64)
+
+
+
+
+
+
+/******************************************/
+记录层
+记录层从上层中获取未解释不定长数据
+
+帧结构
+分段
+记录层将数据封装成 2^14 或者更小的 片段
+ struct {
+           uint8 major, minor;
+       } ProtocolVersion;
+
+       enum {
+           change_cipher_spec(20), alert(21), handshake(22),
+           application_data(23), (255)
+       } ContentType;
+
+       struct {
+           ContentType type;	//记录层协议类型
+           ProtocolVersion version; //协议版本号
+           uint16 length;		//片段长度，小于等于2^14
+           opaque fragment[TLSPlaintext.length];	// 即将传输的数据，记录层不关心
+       } TLSPlaintext;
+
+
+
+
+
+
+
+
+
+
+
+
