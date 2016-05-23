@@ -1,0 +1,11 @@
+1.adb devices
+no permissions
+
+a.lsusb
+b.sudo vi /etc/udev/rules.d/51-android.rules  
+c.  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="9025", MODE="0600"
+d. sudo chmod a+rx /etc/udev/rules.d/51-android.rules
+e.sudo /etc/init.d/udev restart  或者 sudo restart udev
+  sudo ./adb kill-server
+  sudo ./adb start-server 
+  sudo  ./adb devices
