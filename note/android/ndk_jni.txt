@@ -4,3 +4,22 @@
 2.获取java类中方法的签名
   先生成 *.class 文件,然后调用
 	javap -s xxxx.class
+
+3.对于需要在工程里面设置NDK路径，其实只要设置环境变量就可以了ANDROID_NDK_HOME
+
+4. gradle 不想自动生成JNI动态库，想要调用用户自定义的Android.mk
+	在build.gradle文件中添加如下信息
+	sourceSets.main {
+		jniLibs.srcDir 'src/main/libs'
+		jni.srcDirs = [] //disable automatic ndk-build call
+	}
+	// call regular ndk-build(.cmd) script from app directory
+	task ndkBuild(type:Exec) {
+		commandLine 'ndk-build', '-C', file('src/main/jni').absolutePath
+	}
+	//并注释掉
+	/*
+	ndk {
+		moduleName "androidNfc"
+	}
+	 */
