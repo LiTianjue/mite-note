@@ -1,0 +1,6 @@
+
+1.对于返回值是数组的java方法，要使用CallObjectMethod方法去调用，返回值使用强转的方式获得数组
+
+2.获取java类中方法的签名
+  先生成 *.class 文件,然后调用
+	javap -s xxxx.class

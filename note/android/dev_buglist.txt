@@ -9,3 +9,15 @@ e.sudo /etc/init.d/udev restart  æˆ–è€… sudo restart udev
   sudo ./adb kill-server
   sudo ./adb start-server 
   sudo  ./adb devices
+
+
+
+2. ndk-buildµÄÊ±ºò³öÏÖ²¿·ÖÍ·ÎÄ¼şÕÒ²»µ½¶¨Òå
+	´´½¨ Application.mk ÎÄ¼ş
+	Í¨¹ı
+	APP_PLATFORM	:= android-23 
+	Ö¸¶¨²»Í¬µÄplatform À´³¢ÊÔ½â¾ö
+	ÎÒÊÔÑé¹ıÓÃ²»Í¬µÄ±àÒëÆ÷¿ÉÄÜ»áÓĞ²»Í¬µÄĞ§¹û£¬É
+	ÉõÖÁÓĞµÄideĞèÒªÄã×Ô¼ºÌí¼ÓbionicÍ·ÎÄ¼ş
+
+
