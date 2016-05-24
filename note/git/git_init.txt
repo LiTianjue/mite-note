@@ -13,3 +13,19 @@
 	git push -u origin master
 
 	-u 参数可以在第一次push之后指定跟踪的branch
+
+	由于我们在GitHub上创建工程的时候，可能创建了.gitignore README.md等文件
+	所有不先pull 同步的话会push不上去
+	解决办法
+	1.强制用本地数据替换远程数据，远程数据会丢失
+	git push -u origin master -f
+	2.push之前pull
+	git pull origin master
+	会产生一次merge 信息，填入merge 信息即可
+	然后再
+	git push -u origin master
+	3.如果不想把远程的代码merge进本地分支
+	git branch [name]
+	git push -u origin [name]
+	这样远程会产生一个非master的分支
+
