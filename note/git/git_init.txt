@@ -1,0 +1,15 @@
+½
+½«±¾µØÔ´ÂëÉÏ´«µ½github
+
+1.ÔÚgithubÉÏ´´½¨Ô´Âë¹¤³Ì
+
+2.±¾µØµ½Ô´ÂëÄ¿Â¼
+	git init 
+	git add .
+	git commit -m "first commit"
+	
+	Ö¸¶¨ÔÔ¶¶ËµÄorigin
+	¸git remote add origin git@github.comxxxx.git
+	git push -u origin master
+
+	-u ²ÎÊı¿ÉÒÔÔÚµÚÒ»´ÎpushÖ®ºóÖ¸¶¨¸ú×ÙµÄbranch
