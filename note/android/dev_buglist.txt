@@ -1,0 +1,23 @@
+1.adb devices
+no permissions
+
+a.lsusb
+b.sudo vi /etc/udev/rules.d/51-android.rules  
+c.  SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ATTR{idProduct}=="9025", MODE="0600"
+d. sudo chmod a+rx /etc/udev/rules.d/51-android.rules
+e.sudo /etc/init.d/udev restart  æˆ–è€… sudo restart udev
+  sudo ./adb kill-server
+  sudo ./adb start-server 
+  sudo  ./adb devices
+
+
+
+2. ndk-buildµÄÊ±ºò³öÏÖ²¿·ÖÍ·ÎÄ¼şÕÒ²»µ½¶¨Òå
+	´´½¨ Application.mk ÎÄ¼ş
+	Í¨¹ı
+	APP_PLATFORM	:= android-23 
+	Ö¸¶¨²»Í¬µÄplatform À´³¢ÊÔ½â¾ö
+	ÎÒÊÔÑé¹ıÓÃ²»Í¬µÄ±àÒëÆ÷¿ÉÄÜ»áÓĞ²»Í¬µÄĞ§¹û£¬É
+	ÉõÖÁÓĞµÄideĞèÒªÄã×Ô¼ºÌí¼ÓbionicÍ·ÎÄ¼ş
+
+

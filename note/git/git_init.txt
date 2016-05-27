@@ -1,0 +1,31 @@
+½
+½«±¾µØÔ´ÂëÉÏ´«µ½github
+
+1.ÔÚgithubÉÏ´´½¨Ô´Âë¹¤³Ì
+
+2.±¾µØµ½Ô´ÂëÄ¿Â¼
+	git init 
+	git add .
+	git commit -m "first commit"
+	
+	Ö¸¶¨ÔÔ¶¶ËµÄorigin
+	¸git remote add origin git@github.comxxxx.git
+	git push -u origin master
+
+	-u ²ÎÊı¿ÉÒÔÔÚµÚÒ»´ÎpushÖ®ºóÖ¸¶¨¸ú×ÙµÄbranch
+
+	ÓÉÓÚÎÒÃÇÔÚGitHubÉÏ´´½¨¹¤³ÌµÄÊ±ºò£¬¿ÉÄÜ´´½¨ÁË.gitignore README.mdµÈÎÄ¼ş
+	ËùÓĞ²»ÏÈpull Í¬²½µÄ»°»ápush²»ÉÏÈ¥
+	½â¾ö°ì·¨
+	1.Ç¿ÖÆÓÃ±¾µØÊı¾İÌæ»»Ô¶³ÌÊı¾İ£¬Ô¶³ÌÊı¾İ»á¶ªÊ§
+	git push -u origin master -f
+	2.pushÖ®Ç°pull
+	git pull origin master
+	»á²úÉúÒ»´Îmerge ĞÅÏ¢£¬ÌîÈëmerge ĞÅÏ¢¼´¿É
+	È»ºóÔÙ
+	git push -u origin master
+	3.Èç¹û²»Ïë°ÑÔ¶³ÌµÄ´úÂëmerge½ø±¾µØ·ÖÖ§
+	git branch [name]
+	git push -u origin [name]
+	ÕâÑùÔ¶³Ì»á²úÉúÒ»¸ö·ÇmasterµÄ·ÖÖ§
+

@@ -1,0 +1,72 @@
+sudo apt-get install openjdk-7-jdk	//不应该安装openjdk
+sudo apt-get install android-studio
+
+http://my.oschina.net/u/141149/blog/261240
+
+1.检查cpu 是否支持虚拟机加速
+egrep -c '(vmx|svm)' /proc/cpuinfo
+返回０　表示不支持
+
+2.检查是否支持upports kvm,需要安装工具pu-checker
+sudo apt-get install cpu-checker
+
+3.执行检测命令
+kvm-ok
+返回
+
+cpu支持
+"INFO: Your CPU supports KVM extensions
+INFO: /dev/kvm exists
+KVM acceleration can be used"
+
+cpu不支持需要到bios中设置VT开启状态
+"INFO: KVM is disabled by your BIOS
+HINT: Enter your BIOS setup and enable Virtualization Technology (VT),
+	and then hard poweroff/poweron your system
+	KVM acceleration can NOT be used"
+
+开始安装kvm
+	sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+	安装成功之后重启.
+
+安装成功之后重启.
+
+添加用户到kvm,libvirtd组
+
+sudo adduser your_user_name kvm
+sudo adduser your_user_name libvirtd
+安装验证:
+
+sudo virsh -c qemu:///system list
+安装成功出现如下命令
+
+Id Name                 State
+----------------------------------
+
+
+step2 下载JDK	
+卸载openjdk
+sudo apt-get purge openjdk/openjdk*;sudo apt-get clean/autoclean;
+到
+http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+下载jdk8
+解压到/opt/java目录下并设置环境变量
+export JAVA_HOME=/opt/java/jdk1.8.0_91
+export JRE_HOME=${JAVA_HOME}/jre
+export CLASSPATH=.:${JAVA_HOME}/lib
+export PATH=${JAVA_HOME}/bin:$PATH
+
+
+
+step3 下载android-studio ,sdk
+http://www.android-studio.org/
+解压到安装目录
+到安装目录下执行 bin/studio.sh
+设置过程中制定sdk路径
+
+mksdcard sdk tool出错
+sudo apt-get install lib32z1 lib32ncurses5  lib32stdc++6
+
+点开设置，下载4.4 5.0.6.0 的platforms
+下载NDK工具
+
