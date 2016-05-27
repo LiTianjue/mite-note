@@ -3,6 +3,7 @@
 	git config --global user.name "LiTianjue"
 	git config --global user.email "mhpmii@126.com"
 	git config --global color.ui true
+	git config --global core.editor vim
 	
 	git config --list
 
