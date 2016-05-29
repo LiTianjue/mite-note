@@ -1,0 +1,65 @@
+0.在src/main目录下创建jni目录
+
+
+1.在local.properties下配置sdk和ndk
+	sdk.dir=/path/to/android-sdk
+	ndk.dir=/path/to/android-ndk
+
+2.打开gradle/wrapper目录下的 gradle-wrapper.properties文件
+	修改制定的gradle版本（最后一行）
+	distributionUrl=http\://services.gradle.org/distributions/gradle-1.10-all.zip
+
+3.修改项目根目录的build.gradle文件
+	按照版本，修改classpath
+
+4.在java类中写native 方法
+	build->Make Project
+	会在build/xxx/debug/下生成class文件，用这个文件生成jni头文件
+
+5.在jni目录下编写.c/c++文件
+	build->Make Project
+	提示未配置NDK
+	(1)local.properties文件中配置sdk和ndk目录
+	(2)修改app\build.gradle　文件
+	为其在defaultConfig分支中增加上
+	ndk {  
+		moduleName "JniTest"  //生成的库名称
+		ldLibs "log", "z", "m"  //LOCAL_LDLIBS
+		abiFilters "armeabi", "armeabi-v7a", "x86"	//不同体系下的so  
+	}
+
+6.so的输出路径
+	/app/build/intermediates/ndk/debug
+	顺便看到自动生成了一个Android.mk文件
+
+7.so库打包进apk
+	编辑build.gradle文件
+
+
+
+
+###########################################	
+	当然，你也可以自定义源代码路径：
+	android {
+		// .. android settings ..
+		sourceSets.main {
+			jni.srcDirs 'src/main/source'
+		}
+	}
+
+	自定义jni路径，可以在buid.gradle中进行如下配置：
+	android {  
+		// .. android settings ..
+		sourceSets.main {
+			jniLibs.srcDir 'src/main/myCppLibraries' // <-- 你的.so库的实际路径
+		}
+	}
+
+################################################
+在java的native方法（被标红，未定义）
+可以按下alt+enter直接跳转到函数实现（我们实际上并不一定需要头文件）
+
+ build type isn't JNI debuggable的错误，
+ debug {
+	 jniDebuggable true
+ } 

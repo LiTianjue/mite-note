@@ -23,3 +23,4 @@
 		moduleName "androidNfc"
 	}
 	 */
+http://stackoverflow.com/questions/33537889/build-type-isnt-jni-debuggable-error
