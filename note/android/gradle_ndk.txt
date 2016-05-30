@@ -58,8 +58,16 @@
 ################################################
 在java的native方法（被标红，未定义）
 可以按下alt+enter直接跳转到函数实现（我们实际上并不一定需要头文件）
-
+//buildTypes
  build type isn't JNI debuggable的错误，
  debug {
 	 jniDebuggable true
  } 
+
+   debug {
+            debuggable = true
+            jniDebuggable = true
+        }
+ ndk {
+        debuggable = true
+}

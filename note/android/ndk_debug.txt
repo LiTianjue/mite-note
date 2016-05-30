@@ -1,0 +1,69 @@
+
+
+1. 在AndroidManifest.xml 文件中
+        android:debuggable = "true"     //一般不用手动修改
+
+2. build.gradle     //这一步是为了生成动态库的
+sourceSets.main {
+  jniLibs.srcDir 'src/main/libs'
+  jni.srcDirs = []
+}
+
+task ndkBuild(type: Exec) {
+commandLine android.ndkDirectory.getAbsolutePath() + '\\' + 'ndk-build.cmd', '-C', file('src/main/jni').absolutePath, 'NDK_DEBUG=1'
+}
+
+tasks.withType(JavaCompile) {
+  compileTask -> compileTask.dependsOn ndkBuild
+}
+
+3.配置Run/Debug Configuretation
+    添加Android Native
+    设置断点，debug
+
+4.这样还不行，还需要配置 experimental plugin for gradle
+官方网页，搞这些东西最好还是熟悉下怎么翻墙为好，
+推荐大家选择一个付费稳定的翻墙工具，不然频繁的更换工具也是要花费时间和精力的
+像我不看视频的可以选择流量收费的，一个月才几块钱也合算的，我用的6块钱1G/月的
+http://tools.android.com/tech-docs/new-build-system/gradle-experimental
+谷歌NDK的示例
+https://github.com/googlesamples/android-ndk
+一个快速上手的方法，如果手动创建修改可能会缺少较多的东西，
+下载一个google的ndk示例，用as打开，会自动下载相关的东西
+
+(1).首先查看gradle的版本，要构建NDK,最低要使用2.5以上的版本
+File--> Project Structure -> Project
+对照相应的Plugin Version
+我这里是 2.5的，对应0.10的版本
+(2) 需要关注的文件
+.
+├── app/
+│   ├── app.iml
+│   ├── build.gradle    //This one
+│   └── src/
+├── build.gradle            //This one
+├── gradle/
+│   └── wrapper/
+│       ├── gradle-wrapper.jar
+│       └── gradle-wrapper.properties       //This one
+├── gradle.properties
+├── gradlew*
+├── gradlew.bat
+├── local.properties
+├── MyApplication.iml
+└── settings.gradle
+
+ gradle-wrapper.properties // 这里修改是为了满足gradle版本大于2.5才支持ndk
+distributionUrl=https\://services.gradle.org/distributions/gradle-2.10-all.zip
+对照版本是0.7.0-alpha1
+于是打开文件 build.gradle 修改
+
+classpath "com.android.tools.build:gradle-experimental:0.7.0-alpha4"
+
+然后打开app/build.gradle 文件
+将插件
+    apply plugin: 'com.android.application'
+改为
+    apply plugin: "com.android.model.application"
+
+    http://ph0b.com/new-android-studio-ndk-support/

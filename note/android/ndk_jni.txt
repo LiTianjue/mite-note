@@ -9,14 +9,22 @@
 
 4. gradle 不想自动生成JNI动态库，想要调用用户自定义的Android.mk
 	在build.gradle文件中添加如下信息
-	sourceSets.main {
-		jniLibs.srcDir 'src/main/libs'
-		jni.srcDirs = [] //disable automatic ndk-build call
-	}
-	// call regular ndk-build(.cmd) script from app directory
-	task ndkBuild(type:Exec) {
-		commandLine 'ndk-build', '-C', file('src/main/jni').absolutePath
-	}
+defaultConfig {
+	//.....
+    sourceSets.main {
+            jniLibs.srcDir 'src/main/libs'
+            jni.srcDirs = []
+        }
+
+        task ndkBuild(type: Exec) {
+            commandLine android.ndkDirectory.getAbsolutePath() + '\\' + 'ndk-build.cmd', '-C', file('src/main/jni').absolutePath, 'NDK_DEBUG=1'
+        }
+
+        tasks.withType(JavaCompile) {
+            compileTask -> compileTask.dependsOn ndkBuild
+        }
+
+        }
 	//并注释掉
 	/*
 	ndk {
