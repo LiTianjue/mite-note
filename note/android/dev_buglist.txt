@@ -21,3 +21,8 @@ e.sudo /etc/init.d/udev restart  鎴栬 sudo restart udev
 	甚至有的ide需要你自己添加bionic头文件
 
 
+4.到api-19以后
+	在部分机器上会出现dlopen error的错误
+	需要用将api设置为19
+	头文件要手动包含到源码中
+	挺麻烦的

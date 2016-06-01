@@ -11,3 +11,10 @@
 4.从主分支中拉取数据到其他分支
 	git chekout origin/master -- filename
 	git chekout origin/master -- dirname
+
+5.删除已经加入到仓库的文件
+	git rm -r --cached .idea/
+	git rm --cached local.properites
+
+	//如果不加 --cached ,那本地文件也会被删除掉
+
