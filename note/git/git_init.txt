@@ -1,31 +1,30 @@
-½
-½«±¾µØÔ´ÂëÉÏ´«µ½github
 
-1.ÔÚgithubÉÏ´´½¨Ô´Âë¹¤³Ì
+å°†æœ¬åœ°æºç ä¸Šä¼ åˆ°github
 
-2.±¾µØµ½Ô´ÂëÄ¿Â¼
+1.åœ¨githubä¸Šåˆ›å»ºæºç å·¥ç¨‹
+
+2.æœ¬åœ°åˆ°æºç ç›®å½•
 	git init 
 	git add .
 	git commit -m "first commit"
 	
-	Ö¸¶¨ÔÔ¶¶ËµÄorigin
-	¸git remote add origin git@github.comxxxx.git
+	æŒ‡å®šè¿œç¨‹origin
+	git remote add origin git@github.comxxxx.git
 	git push -u origin master
 
-	-u ²ÎÊı¿ÉÒÔÔÚµÚÒ»´ÎpushÖ®ºóÖ¸¶¨¸ú×ÙµÄbranch
+	-u å‚æ•°å¯ä»¥åœ¨ç¬¬ä¸€æ¬¡pushä¹‹åæŒ‡å®šè·Ÿè¸ªçš„branch
 
-	ÓÉÓÚÎÒÃÇÔÚGitHubÉÏ´´½¨¹¤³ÌµÄÊ±ºò£¬¿ÉÄÜ´´½¨ÁË.gitignore README.mdµÈÎÄ¼ş
-	ËùÓĞ²»ÏÈpull Í¬²½µÄ»°»ápush²»ÉÏÈ¥
-	½â¾ö°ì·¨
-	1.Ç¿ÖÆÓÃ±¾µØÊı¾İÌæ»»Ô¶³ÌÊı¾İ£¬Ô¶³ÌÊı¾İ»á¶ªÊ§
+	ç”±äºæˆ‘ä»¬åœ¨GitHubä¸Šåˆ›å»ºå·¥ç¨‹çš„æ—¶å€™ï¼Œå¯èƒ½åˆ›å»ºäº†.gitignore README.mdç­‰æ–‡ä»¶
+	æ‰€æœ‰ä¸å…ˆpull åŒæ­¥çš„è¯ä¼špushä¸ä¸Šå»
+	è§£å†³åŠæ³•
+	1.å¼ºåˆ¶ç”¨æœ¬åœ°æ•°æ®æ›¿æ¢è¿œç¨‹æ•°æ®ï¼Œè¿œç¨‹æ•°æ®ä¼šä¸¢å¤±
 	git push -u origin master -f
-	2.pushÖ®Ç°pull
+	2.pushä¹‹å‰pull
 	git pull origin master
-	»á²úÉúÒ»´Îmerge ĞÅÏ¢£¬ÌîÈëmerge ĞÅÏ¢¼´¿É
-	È»ºóÔÙ
+	ä¼šäº§ç”Ÿä¸€æ¬¡merge ä¿¡æ¯ï¼Œå¡«å…¥merge ä¿¡æ¯å³å¯
+	ç„¶åå†
 	git push -u origin master
-	3.Èç¹û²»Ïë°ÑÔ¶³ÌµÄ´úÂëmerge½ø±¾µØ·ÖÖ§
+	3.å¦‚æœä¸æƒ³æŠŠè¿œç¨‹çš„ä»£ç mergeè¿›æœ¬åœ°åˆ†æ”¯
 	git branch [name]
 	git push -u origin [name]
-	ÕâÑùÔ¶³Ì»á²úÉúÒ»¸ö·ÇmasterµÄ·ÖÖ§
-
+	è¿™æ ·è¿œç¨‹ä¼šäº§ç”Ÿä¸€ä¸ªémasterçš„åˆ†æ”¯
