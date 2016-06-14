@@ -112,3 +112,42 @@ s_ssl = SSL_new(c_ctx);
 
 //设置session 
 SSL_set_session(s_ssl,NULL);
+
+SSL_set_fd(s_ssl,client_fd);
+
+//对于服务器来讲
+//客户端连接成功后第一个调用的就是
+SSL_accept(s_ssl);
+//看看这里面做什么什么
+// s->method->ssl_accept(s);
+//明显是调用了meth 里面的ssl_accept
+// 源码 s32_srvr.c
+//首先产生一个4字节的时间戳
+// unsigned long TIME = time(NULL)
+//然后开始一个状态机循环（握手过程）
+/*
+ for(;;)
+{
+        switch{
+            握手前的准备：
+                分配一块buff
+                buf = BUF_MEM_new()
+                然后让这块buf增大到 16384的大小
+                BUF_MEM_grow(buf,SSL3_RT_MAX_PLAIN_LENGTH)
+                然后清除ssl中原有的数据块，,跳出循环，更新状态机转到HELLOA
+            HELLOA:
+                获取客户端的hello 数据
+                检查协议版本号
+                查看需要什么版本的加密套件去适配客户端版本
+            HELLOB:
+                取出加密套件，压缩算法，随机数
+                取出session ID， 看有没有重用
+                没有new　一个session
+                选择一个算法套件
+            SSL3_ST_SW_SRVR_HELLO_A:
+                
+            
+
+        }
+}
+*/
