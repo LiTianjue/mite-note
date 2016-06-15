@@ -151,3 +151,33 @@ SSL_accept(s_ssl);
         }
 }
 */
+
+//对于客户端，普通套接字连接成功后
+//调用SSL_connect 来完成握手
+SSL_connect(c_ssl);
+//最终调用的也是meth里的方法
+// s->hanshake_func = s->method->ssl_connect
+/*
+ [1] 清除 ctx回话和算法套件
+//s23_clnt.c
+ssl23_client_hello(s)
+
+//s23_clnt.c
+ssl23_client_hello(s)
+
+//s23_clnt.c
+ssl23_get_server_hello(s)
+
+//取到server hello 之后  开始做握手
+s->handshake_func = s->method->ssl_connect
+SSL_connect(s)
+
+ssl3_check_finished(s);
+//获取服务器证书
+ssl3_get_server_certificate(s)  // 取出服务器发来的证书
+-- ssl_verify_cert_chain(s)         // 验证证书链
+-- ssl_sess_cert_new();             
+
+-ssl3_get_key_exchange(s)
+
+*/
