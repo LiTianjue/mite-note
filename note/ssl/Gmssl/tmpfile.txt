@@ -1,0 +1,48 @@
+1.
+SM2数字签名方案中被签名的杂凑值不仅仅是消息的杂凑值，而是签名者身份信息串联上消息的杂凑值，其中签名者身份信息是签名者的可辨别标识字串、椭圆曲线方程系数、生成元和签名者公钥串联后字串的杂凑值。SM2标准中并未说明签名者的可辨别标识字串格式及获得方式，应用可以采用X.509证书中的Subject字段、CN (CommonName)或自行规定。”
+
+但实际上在 GM/T 0009-2012《SM2密码算法使用规范》中第10小节“​用户身份标识 ID 的默认值”对此有附加描述：
+
+无特殊约定的情况下,用户身份标识 ID 的长度为 16 字节,其默认值从左至右依次为: 0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38。
+
+在标准的实际执行中，现有国密根CA颁发的证书中，CA的签名均采用此默认值。各接入国密根的二级CA也采用此值。
+
+在国密的SSL标准 GM/T 0024-2014 《SSLVPN技术规范》中未对此取值做定义，因此目前国密局的SSLVPN检测平台采用了此值，因此所有通过平台测试的厂商也都采用了这个值。
+
+目前的SM2_compute_id_digest()在EC_KEY中没有ID的情况下采用上述默认ID计算，但是如果用户没有通过SM2_set_id()设定，那么SM2_get_id()返回空。
+
+
+2.
+创建demoCA目录，在demoCA目录下执行：
+mkdir certs crl newcerts private
+touch index.txt
+echo "01" > serial
+
+将通过以下自签名生成的cacert.pem放到demoCA目录下，cakey.pem放到demoCA/private
+
+创建公私钥和证书请求：
+gmssl ecparam -genkey -name sm2p256v1 -out cakey.pem
+gmssl req -new -sm3 -key cakey.pem -out cacsr.pem
+
+自签名
+gmssl req -x509 -sm3 -days 3650 -key cakey.pem -in cacsr.pem -out cacert.pem
+
+ca签名（在demoCA的父目录下执行）
+gmssl ca -md sm3 -in client_csr.pem -out client_cert.pem -days 3650
+
+显示证书信息：
+gmssl x509 -text -noout -in cacert.pem
+gmssl req -in cacsr.pem -noout -text
+
+证书通信测试命令
+SERVER: 
+gmssl s_server -key server_key.pem -cert server_cert.pem -CAfile cacert.pem -cipher ECDHE-SM4-SM3 -verify 1
+
+CLIENT: 
+gmssl s_client -key client_key.pem -cert client_cert.pem -CAfile cacert.pem -cipher ECDHE-SM4-SM3 -verify 1
+
+
+3.别人做的分支
+(https://github.com/mingpen/GmSSL/commits/dev-linux)
+
+4.
