@@ -1,0 +1,37 @@
+原文：
+http://www.smartcard-hsm.com/2014/08/22/using-smartcard-hsm-with-ecc-and-opensc.html
+
+1.确定加密卡支持的ECC曲线
+	openssl 内置60多组曲线，但是加密卡一般只支持其中的几组，需要确定一下
+	ECC比较常见的曲线是
+		secp192r1 (aka prime192v1)
+		secp256r1 (aka prime256v1)
+
+2.创建卡内密钥对
+	pkcs11-tool --module /usr/local/lib/opensc-pkcs11.so --login --pin 648219 --keypairgen --key-type EC:prime256v1 --id 12 --label defaultkey
+	我手上的加密卡需要公私钥的label不一样才能存储到卡内，这里需要单独写程序实现
+
+3.读取公钥（pkcs15:密码令牌信息语法）
+	pkcs15-tool --read-public-key 12
+
+4.通过openssl 提取公钥
+	 pkcs15-tool --read-public-key 12 | openssl ec -pubin -text -noout
+
+5.使用ECC私钥签名数据
+	kcs11-tool --module /usr/local/lib/opensc-pkcs11.so --login --pin 648219 --sign --id 12 --input text.txt --output text.txt.signature
+	说明：
+	使用的签名算法是 ECDSA with SHA-1
+	存储 ASN.1 SEQUENCE containing 2 INTEGER r and s.
+
+6.公钥提取、转换和共享密钥派生的使用
+	提取
+	pkcs15-tool --read-public-key 02 --out recipient-public-key.pem
+	转换
+	 openssl ec -in recipient-public-key.pem -out recipient-public-key.der -outform DER -pubin -pubout
+	生成共享密钥
+	pkcs11-tool --module /usr/local/lib/opensc-pkcs11.so --login --pin 648219 --id 02 --derive --input-file recipient-public-key.der -m ECDH1-DERIVE --output-file shared-secret
+	查看
+	 hexdump -C shared-secret 
+
+
+最后还是没有提到证书

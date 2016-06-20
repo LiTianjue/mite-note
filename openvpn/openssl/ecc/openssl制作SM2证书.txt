@@ -1,0 +1,61 @@
+
+
+ECC
+# openssl ecparam -out EccCA.key -name prime256v1 -genkey
+# openssl req -config openssl.cnf -key EccCA.key -new -out EccCA.req
+# openssl x509 -req -in EccCA.req -signkey EccCA.key -out EccCA.pem
+# openssl ecparam -out EccSite.key -name prime256v1 -genkey
+# openssl req -config openssl.cnf -key EccSite.key -new -out EccSite.req
+# openssl x509 -req -in EccSite.req -CA EccCA.pem -CAkey EccCA.key -out EccSite.pem -CAcreateserial
+
+SM2
+1.生成密钥
+openssl ecparam -out EccCA.key -name sm2p256v1 -genkey 
+
+2.生成证书请求
+openssl req -config openssl.cnf -key EccCA.key -new -out EccCA.req
+
+3.自签名
+openssl x509 -req -in EccCA.req -signkey EccCA.key -out EccCA.pem
+/********CA 结束**********************/
+签发用户证书
+1.生成密钥
+openssl ecparam -out SM2Client.key -name sm2p256v1 -genkey
+2.生成证书请求
+openssl req -config openssl.cnf -key SM2Client.key -new -out SM2Client.req
+3.使用CA证书签名
+openssl x509 -req -in SM2Client.req -CA EccCA.pem -CAkey EccCA.key -out SM2Client.pem -CAcreateserial
+
+
+证书验证
+openssl verify -CAfile CA.crt Client.crt
+
+生成几张用户证书，然后用openssl pkcs12命令生成p12格式证书文件，然后导入到firefox中。
+生成证书时，ECC曲线选择的是prime256v1。之前有选过prime192v1，好像firefox不认，改了种曲线就好了。
+生成站点证书或用户证书时，也可以用ECC根证书颁发RSA证书，测试一样能通过。
+
+ 将私钥秘cer证书合并成p12格式  
+
+1）生成pkcs12文件，但不包含CA证书：  
+
+openssl pkcs12 -export -inkey ocspserverkey.pem -in ocspservercert.pem  -out ocspserverpkcs12.pfx
+
+2）  生成pcs12文件，包含CA证书： 
+
+openssl pkcs12 -export -inkey server.key -in server.crt -CAfile ca.crt -chain -out server.pfx
+
+3）  将pcks12中的信息分离出来，写入文件：
+
+openssl pkcs12 –in ocsp1.pfx -out certandkey.pem
+
+4）  显示pkcs12信息：
+
+openssl pkcs12 –in ocsp1.pfx -info  
+
+------------------------------------ 
+
+ 附： 1、把cert1.pem转换成.p12格式  
+
+openssl pkcs12 -export -in cert1.pem -inkey　cert1.key -certfile ca.pem -out cert1.p12  
+
+2、把cert1.pem转换成.cer格式:只需把扩展名改为.cer即可.

@@ -1,0 +1,50 @@
+
+1.支持的算法
+
+数字签名算法
+GOST R 34.10-94
+GOST R 34.10-2001
+
+摘要算法
+GOST R 34.11-94		256-bit 哈希值
+
+对称算法
+GOST 28147-89		256-bit 密钥
+
+MAC算法
+GOST 28147-89
+
+2.使用
+
+通过TETF支持TLS
+
+在配置文件里配置engine
+
+配置文件
+   openssl_conf = openssl_def
+
+   [openssl_def]
+   engines = engine_section
+                                                                                         
+    [engine_section]
+    gost = gost_section
+
+    [gost_section]
+    engine_id = gost
+    dynamic_path = /usr/lib/ssl/engines/libgost.so
+    default_algorithms = ALL 
+    CRYPT_PARAMS = id-Gost28147-89-CryptoPro-A-ParamSet
+
+3.命令行
+创建密钥对
+./openssl  genpkey -engine gost  -algorithm gost2001 -pkeyopt paramset:A -out seckey.pem
+  -algorithm 指定算法
+  -pkeyopt 传输密钥参数
+
+生成证书请求
+openssl req -engine gost -newkey gost2001 -pkeyopt paramset:A -out gost.req
+
+签名及摘要
+openssl dgst -md_gost94 datafile	（没有使用engine,可见这部分不是用的engine实现的）
+
+EVP_PKEY API 

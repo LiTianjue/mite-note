@@ -1,0 +1,4 @@
+openssl verify 命令对证书的有效性进行验证，verify 指令会沿着证书链一直向上验证，直到一个自签名的CA。
+
+
+ openssl verify -CAfile ca.crt admin.crt 

@@ -1,0 +1,30 @@
+从windows api中获取的der编码的文件，通过base64编码后直接存储可以被系统识别，双击还是可以打开查看的
+
+获得标准的x509证书
+
+x509 *cert = d2i_x509(NULL,证书数据，证书长度)
+
+
+而要最终转换成文件，需要
+格式转换可以用
+der转换为 PEM
+openssl x509 -inform der -in test.der -out -outform test.pem
+
+# PEM转换为DER
+> openssl x509 -outform der -in myserver.pem -out myserver.[der|crt]
+
+于是有那么一个好用的宏可以直接吧der编码的文件转换成pem编码的文件
+int PEM_write_bio_x509(bio,x509*)
+
+接口  PEM_write_X509(fp,cert);
+看着很没好，编译各种问题；
+X509 *cert = NULL;
+    cert = d2i_X509(NULL,(const unsigned char **)cert_context->pbCertEncoded,cert_context->cbCertEncoded);
+    //PEM_write_X509(fp,cert);
+    //fclose(fp);
+    BIO *out = NULL;
+    out = BIO_new_file("test.pem","w");
+
+    //BIO_write_filename(out,"test.pem");
+    PEM_write_bio_X509(out,cert);
+    BIO_free(out);

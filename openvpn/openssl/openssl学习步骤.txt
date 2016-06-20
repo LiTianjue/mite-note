@@ -1,0 +1,295 @@
+step 0 
+
+Well, first off a warning (and please read this despite the 
+admonishing tone it might have; crypto work is playing with live guns 
+and if a little up-front warning can prevent you from pointing it at 
+your foot witthout notiing while you ask "is this the trigger, sir?" I 
+opt for the sermon so survival rate will maybe be a bit higher this 
+year ;-) ): writing crypto code, especially implementing cryptographic 
+algorithms themselves, is not for the faint of heart and is definitely 
+/not/ a good exercise to get to learn a programming language or 
+development environment - it may sound wicked cool or whatever, but 
+know that the experience is tough and exacting at several levels and 
+only truly appealing to anal retentives, so trying this on for size 
+too early will only cause utter devastation and deception to you. 
+Crypto is 0% nice and 100% evil and 'Unforgiving' is it's middle name. 
+
+This warning has to be given, because experience shows that's what 
+happens from dabbling with these goods too early; though the 
+government reasons were/are different, it still should be treated as 
+live ammunitions (guns and stuff), locked and loaded to go and quite 
+like the antique ones: no safety switch /anywhere/. 
+
+
+So I'll assume you are fluent in 'C', don't mind a bit of perl on the 
+side, breathe Makefiles like they're oxygen and are familiar with the 
+UNIX development platform at console level - forget about the shiny 
+IDEs for now. That means you can juggle with 'grep', 'sed', 'awk', 
+'find' and other commandline friends and might be able to teach me a 
+lesson or two about those. 
+When you are working on a Windows platform (like I usually am), you 
+have several years experience of porting UNIX / Windows apps back and 
+forth and you know a linker from a librarian and don't break out a 
+sweat when the debugger acts hairy today. You also already have 
+acquired your own commandline awk/sed/perl/find/etc. equivalents or 
+are completely confident that you can do the same with the native 
+Windows commandline tools. 
+
+If you are not perfectly comfortable with that list, or have not used 
+some or all of the tools mentioned above yet, make yourself familiar 
+with those. (Knowing either sed or awk is fine; all the others are 
+each mandatory and non-interchangeable.) Take several months, because 
+you don't want to fight this battle at both a tool, a code and a 
+protocol level all at once. 
+
+Therefore, the next few steps are described in somewhat terse language 
+at times - they assume you know all this and are saying to me right 
+now "no worries! now please get on with it!" 
+
+
+
+step 1 
+
+You have a full source distribution of OpenSSL. You have compiled and 
+run the library itself and the test tools that come with it and you 
+have made bloody darn sure those tools are actually the ones compiled 
+by you yourself and are running the openssl library version you just 
+compiled. They should /not/ by any coincidence whatsoever happen to 
+work because you inadvertedly started their prebuilt and installed 
+copies that come with almost all Linux/BSD distros these days. 
+
+You know what to do when you are not sure whether you adhere to the 
+above and you already know several ways to indeed verify this. 
+
+
+
+step 2 
+
+[There's a discussion going on here about documentation and use cases 
+just appeared there, but we'll ignore that for now and use that corny 
+line of developers of all ages: "Use the Source, Luke!"] 
+
+You make sure you are familiar with the openssl, s_server and s_client 
+tools and anything else in the kit that is needed to set up a sample 
+environment where you can perform the cryptographic actions you wish 
+to perform with your new algorithm. Of course you ensure these 
+operations work as expected when you pick a few different options and 
+algorithms. 
+
+What I call checking out the neighbourhood. 
+
+Here I would go a bit further even; there's several tutorials on the 
+net how to generate a client and server certificate and how to apply 
+it to s_server and s_client so you can play with both for a while, 
+even when your final solution does not require certificates or SSL. 
+Getting to know these tools helps you in testing your own work later 
+on as you attained flexibility in testing approach; a good 
+implementation should be able to handle these operations you are now 
+playing with. 
+
+
+step 3 
+
+Time to dive into the code proper. First things first: the SSL 
+protocol is in the ssl/ directory[*]; no need to touch that, because 
+new crypto algorithms either go directly into libcrypto or are created 
+as a new 'engine' -- the latter is highly preferred, but both are 
+possible. The former is harder (= more costly) once your code enters 
+the maintenance cycle as you'll have to remerge and review every point 
+release to ensure you're up to par. Better take the road, which is a 
+bit harder for starters, but has a far better potential play at later 
+dev stages: a crypto engine plugin. 
+Yes, that's right, just like the GOST one. 
+
+Before you go there, realize this: all crypto actions, hashing, 
+ciphering, etc., should travel through the EVP calls/layer. Rule of 
+thumb. 
+Not always true everywhere, but stick to this as a rule of thumb for 
+99.99% of cases and you didn't ask the question you asked when you're 
+in that .01% zone anyway, trust me. ;-) 
+
+Try to see the flow for a basic 'enc'/'dec' encryption and decryption; 
+you need this, because your code will be part of this flow. Do 
+yourself a favour: 
+
+- prep out your favorite debugger 
+- test a commandline for 'enc' and 'dec' (which is 'enc -d') using 
+AES128, some content and a key you randomly picked, and make sure it 
+works. 
+- do the same, now for GOST. 
+- having those commandlines and testfiles at the ready, kickstart the 
+debugger and rerun the buggers again while you trace the callstack and 
+step through the functions. 
+
+What you should see happen is 'enc' digging up some info about the 
+AES128 cipher (EVP_get_cipherbyname()) -- which is lateron going to be 
+able to deliver info about your own cipher when you did get everything 
+right in the end! -- then travel further, into several EVP_xyz calls, 
+which you now know are the wrapping layer around /all/ crypto 
+activity, so we enter those, and for AES you'll end up at one in the 
+code that can be found in the directory 
+ crypto/aes/*.[cs] 
+and don't worry about all the lines, the call stack is a /big/ hint 
+about what's going down, just by looking at the names, while you 
+familiarize yourself with the EVP structures. 
+
+Do this for AES first - notice that the whole engine party will be 
+skipped completely, because AES is a core library crypto cipher - to 
+see how it goes down 'old skool'. Know that 'engines' extend on this. 
+
+When you run into the surprise of landing in assembly language or 
+parts that are not accessible to sourceview in your debuger or some 
+such, reconfigure your OpenSSL copy with the 'no-asm' config flag and 
+rebuild the whole shebang. What this does is rip out all the highly 
+optimized assembly code (the *.s files) and build a C-only library. 
+It's slower but it's C, front to back all the way now. Try the 
+debugger again and see whether you can go everywhere. Watch the 
+callstack as it will tell you what is happening and after a while 
+you'll get a sense of when to skip or enter calls. This is mandatory, 
+because you will be debugging your own produce too -- I have yet to 
+meet someone who could write non-trivial code blocks and not have a 
+bug lurking in there at the end. 
+
+Now you have a feel for how core ciphers travel the code: DES, AES, 
+RC5, they're all the same that way. Different directories in ./crypto/ 
+but look at those interfaces: they're all the same for all the secret 
+key ciphers. 
+
+
+
+[*]Footnote: when you wish to use your own cipher over communication 
+lines using SSL/TLS/DTLS, you will find that you'll need to edit a few 
+bits in some definition arrays in the ssl/ directory, but that's 
+specialist stuff for step6 or maybe it should be a step7. File this 
+bit away for later and retrieve when you need it. 
+
+
+step 4 
+
+Side note: if you wish to implement a new hash, the story is similar, 
+but hashes are different animals, so they travel a slightly different 
+path. You both mentioned 'cipher' so I'll leave it at that - once 
+you've looked at a few, the pattern will emerge, surely. 
+
+So this time we're going to see how GOST is employed through the 
+ENGINE interface -- which sits in both 
+  ./crypto/engine/*.[ch] 
+and 
+  ./engines/* 
+where the first constitutes the generic interface on the libcrypto 
+side, while the latter, ./engines/ , carries the different hard- and 
+software based engines. Several in there are smaller in implementation 
+that GOST, but when you have a look you'll find that critical parts 
+are 'missing': those are hardware-based crypto devices which expect 
+the presence of a hardware/device lib on the backend side of things, 
+so unless you have such 'dongles', they're useless. Hence we stick to 
+GOST, as that's a 100% software based engine. 
+
+You know what to do: enc/dec and maybe a few other things to wish to 
+try, now with GOST instead of AES128 as the selected cipher and each 
+of those commandlines executed in the debugger while having a look at 
+the callstack, etc. 
+
+
+By now you've a mental image of where OpenSSL will go when you execute 
+the cipher code, so you have a good initial idea where to poke when 
+you're going to test your own brand new engine. 
+
+
+step 5 
+
+there's several ways to create a new engine, starting from scratch or 
+borrowing, and though I personally prefer doing such things from 
+scratch, it is easier to borrow GOST for this, because we can do this 
+thing in smaller steps. The first is 
+  faking it. 
+
+That is: we're going to act like our stuff is already done, tested and 
+all, and exactly the same quality of work as GOST. Which means we're 
+going to copy /all/ engines/ccgost files into a new directory, say 
+  cp -R engines/ccgost/ engines/mycipher2009/ 
+after we checked where GOST references might be hiding, which is 
+easily found by running 
+   grep -i gost `find . -type f -print` -l 
+in the openSSL base directory. It should list a couple of 
+makefiles,everything in the engines/ccgost/ and a few other files as 
+well. Note those locations, because that's the places where we'll go 
+to do the 'fake'. 
+
+Having copied GOST, we now declare this cipher to be our own 
+magnificent work called 'mycipher2009' so I'll refer to the 
+requirements mentioned above and that should combine nicely with the 
+hint of a little 
+sed -e 's/GOST/MYCIPHER2009/g' 
+sed -e 's/gost/mycipher2009/g' 
+editing of everything in your new mycipher2009 directory. 
+Plus opening each other file mentioned by that 
+   grep -i gost `find . -type f -print` -l 
+to see whether we need to vi yy,p the GOST lines in there and edit 
+gost into mycipher2009 in the copies. 
+Some files may not need to be changed as they are not relevant to the 
+build process, but you bet editing the Makefiles is mandatory: add you 
+new one to the ENGDIRS, for instance, and otherwise inspect each of 
+those files listed by grep to see and decide whether you should add 
+you mycipher2009 stuff there. 
+
+Now that you have made a mirror-copy of GOST under a new name, it's 
+time to recompile/rebuild and see where you forgot something; expect 
+the process to go belly up and dig around a bit to fix that. It isn't 
+hard, it's just work. 
+Once you have new builds of all the tools all that previous 
+seemingly-nonsense walking about I had you pays off, because the only 
+thing to worry about now is whether or not your mycipher2009 engine 
+gets integrated correctly or not: you know the tools, so you know how 
+to list the 'known ciphers' using the openssl tool, you know how to 
+use GOST, so you can now pick your mycipher2009 instead and try with 
+that and given the fact that you just ripped off a copy of GOST the 
+encrypted data should even match up with the GOST runs: both 
+mycipher2009 and GOST are identical twins now, after all. 
+
+
+Which has you set up for a fresh new engine of your own. 
+
+The hard part is 'step 6' which will depend on what you want to do: 
+here the work on your own cipher starts, as those debugger-assisted 
+walks have given you a clear idea where goes what inside the GOST 
+engine and with a bit of source-inspection you can start ripping out 
+parts and replace them by your own. Easy as pie. ;-) <yes, that was an 
+evil grin, right there> 
+
+Before you go, do yourself a favor and make a backup - so in case of 
+panic you don't have to return to step1 but can backpedal to 
+mycipher2009 and GOST being identical twins, which spares a bit of 
+work when the faeces hit the propellors. 
+
+So far the story of building engines. You've got a lot of ground to 
+cover getting to step6, so I'll assume for now that this is enough to 
+get you occupied for a while and that last bit of integrating your own 
+cipher, well, by hen you've seen enough code flows to have a pretty 
+good idea where you're going. 
+
+Take care, 
+
+Ger 
+
+
+
+PS: forgot to mention this: pick a OpenSSL tree distribution you feel 
+safe about; I myself like to ride bleeding edge from CVS HEAD, but 
+that may get you a few surprises at times where you don't want any, so 
+my advice would be to take the latest bundled tar.gz release and go 
+from there. 
+
+[When you go with latest as of the date of this writing, be aware 
+there's an issue lurking in the SSL renegotiation code that is under 
+scrutiny right now, so check up on that again once it becomes 
+important to you: you might need to download the next distrib package 
+then for this particular communication feature fix-of-a-fix, which is 
+a nice exercise in merging your code with an updated OpenSSL source 
+tree -- there's code merge tools for that; I use a semi-manual process 
+through a windows app called 'Beyond Compare' but that's because I'm 
+very comfortable with that one and I like to be in total control over 
+which lines enter my repositories where and when. Pick your own 
+favorite here.  This little blurb is only important when you employ 
+OpenSSL for its secure /comminucation/ abilities, i.e. when you use it 
+to provide SSL/TLS/DTLS or anything that's riding on top of that.] 

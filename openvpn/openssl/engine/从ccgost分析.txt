@@ -1,0 +1,47 @@
+签名算法
+GOST R 34.10-94
+GOST R 34.10-2001
+
+摘要算法
+GOST R 34.11-94			256-bit 的hash 值 （32字节）
+
+
+我们之前实现了sm3 算法通过EVP 加入到 openssl 之中，这次我们使用engine的方式实现
+参考ccgost的摘要算法 GOST 34.11-94
+
+Let's do it !
+
+打开文件gost_md.c
+发现和咱们之前在crypto/evp/ 下新增的m_sm3.c 文件是相当接近的
+
+检查源文件 发现nid也已经定义在 object/obj_mac.h 文件里了，从engine 的角度来说，这是不合理的
+因为这engine 作为外挂的插件，所用的东西应该自己定义好而不是使用openssl原来的东西
+
+首先打开engine入口的文件 gost_eng.c
+查找和GOST R 34.11-94 engide 相关的内容
+首先找到
+
+static const char *engine_gost_id = "gost";
+static const char *engine_gost_name = "Reference implementation of GOST engine";
+
+然后是 摘要算法的声明
+static int gost_digests(ENGINE *e, const EVP_MD **digest,const int **nids, int ind); 
+
+然后是摘要算法nid的定义 显然这几个nid已经出现在源码里面了
+static int gost_digest_nids[] = { NID_id_GostR3411_94, NID_id_Gost28147_89_MAC, 0 };
+
+函数 bind_gost 里面  设置engine的摘要算法函数
+if (!ENGINE_set_digests(e, gost_digests)) {
+       printf("ENGINE_set_digests failed\n");
+         goto end;
+     }
+
+大概意思是添加算法到引擎表吧
+!ENGINE_register_digests(e)
+
+
+注意我们在之前的实现的时候 在evp.h中添加了 const EVP_MD *EVP_sm3(void);
+			   在c_alld.c中添加了 EVP_add_digest(EVP_sm3());
+ !EVP_add_digest(&digest_gost)
+  
+

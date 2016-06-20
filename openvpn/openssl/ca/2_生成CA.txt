@@ -1,0 +1,32 @@
+也是自签名的？
+1.生成CA的私钥
+	openssl genrsa -out ca.key 1024
+
+2.生成CA的证书
+	分步操作
+	1).生成证书签名请求
+	   openssl req -new -key ca.key -out ca.csr
+	2).生成证书
+	   openssl req -new -x509 -days 365 -key ca.key -out ca.crt
+
+
+
+
+如果需要生成一个管理员ca
+1.生成管理员私钥
+	openssl genrsa -out admin.key 1024
+
+2.生成证书请求
+	openssl req -new -key admin.key -out admin.csr
+
+3.ca签名证书
+	openssl x509 -sha1 -req -in admin.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out admin.crt -days 365
+	查看一下openssl verify admin.crt
+
+
+在使用engine的时候不能用命令x509 应为这个命令没有-config选项
+需要把engine配置到openssl的默认配置文件中去
+/etc/ssl/openssl.cnf
+
+openssl ca -config 
+用卡内密钥（CA）签名

@@ -1,0 +1,36 @@
+PEM
+它的形式为“-------BEGIN XXXX ------”，与结尾的“------END XXXX------”对应。
+头信息：如果数据是处理后存放，这里会有加密算法和初始化向量iv
+信息体；BASE64编码后的数据
+
+
+Openssl生成PEM格式文件的大致过程如下：
+
+1)    将各种数据DER编码；
+
+2)    将1）中的数据进行加密处理（如果需要）；
+
+3)    根据类型以及是否加密，构造PEM头；
+
+4)    将2）中的数据进行BASE64编码，放入PEM文件。
+Openssl各个类型的PEM处理函数主要是write和read函数。write函数用于生成PEM格式的文件，而read函数主要用于读取PEM格式的文件
+
+
+各种EVP结构
+1 EVP_PKEY		非对称密钥信息，
+2 EVP_MD		摘要算法信息非对称算法类型以及各种计算函数
+3 EVP_CIPHER		对称加密相关的信息以及算法
+4 EVP_CIPHER_CTX	对称算法上下文结构，此结构主要用来维护加解密状态，存放中间以及最后结果。
+
+
+md5 16 字节 128比特
+
+
+8字节数据des_ecb加密得到16字节，是应为默认的PaddingMode是PKCS7
+如果不希望得到这样的结果 将Padding属性改成Zeros模式
+
+EVP_CIPHER_CTX_set_padding(&ctx, 0); 
+要放在EVP_EncryptInit_ex(&ctx,EVP_des_ecb(),NULL,key,NULL)
+不要初始化的时候又会被默认的pading替换
+同时必须注意加密数据必须是密钥长度的整数倍
+不是整数倍的需要在加解密前手动完成填充

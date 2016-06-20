@@ -1,0 +1,54 @@
+ 1.查看key
+openssl rsa -noout -text -in ca.key
+
+2.查看CSR信息
+> openssl req -noout -text -in myserver.csr
+
+3.查看证书信息
+> openssl x509 -noout -text -in ca.crt
+
+4.验证证书
+# 会提示self signed
+> openssl verify ca.crt
+
+5.去掉key的密码保护
+> openssl rsa -in myserver.key -out server.key.insecure
+
+6.不同证书的转换
+# PKCS转换为PEM
+> openssl pkcs12 -in myserver.pfx -out myserver.pem -nodes
+
+# PEM转换为DER
+> openssl x509 -outform der -in myserver.pem -out myserver.[der|crt]
+
+# PEM提取KEY
+> openssl RSA -in myserver.pem -out myserver.key
+
+# DER转换为PEM
+> openssl x509 -inform der -in myserver.[cer|crt] -out myserver.pem
+
+# PEM转换为PKCS
+> openssl pkcs12 -export -out myserver.pfx -inkey myserver.key -in myserver.pem -certfile ca.crt
+
+
+7.测试证书
+测试证书
+Openssl提供了简单的client和server工具，可以用来模拟SSL连接，做测试使用。
+
+# 连接到远程服务器
+> openssl s_client -connect www.google.com.hk:443
+
+# 模拟的HTTPS服务，可以返回Openssl相关信息 
+# -accept 用来指定监听的端口号 
+# -cert -key 用来指定提供服务的key和证书
+> openssl s_server -accept 443 -cert myserver.crt -key myserver.key -www
+
+# 可以将key和证书写到同一个文件中
+> cat myserver.crt myserver.key > myserver.pem
+# 使用的时候只提供一个参数就可以了
+> openssl s_server -accept 443 -cert myserver.pem -www
+
+# 可以将服务器的证书保存下来
+> openssl s_client -connect www.google.com.hk:443 </dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > remoteserver.pem
+# 转换成DER文件，就可以在Windows下直接查看了
+> openssl x509 -outform der -in remoteserver.pem -out remoteserver.cer

@@ -1,0 +1,27 @@
+x509 这个命令没有-config选项
+需要把engine配置到openssl的默认配置文件中去
+/etc/ssl/openssl.cnf
+对于其他的命令可以使用-config 指定配置文件
+
+需要把
+ openssl_conf            = openssl_def
+放到配置文件的开始
+
+
+
+用卡内密钥生成自签名证书
+[直接生成]
+openssl req -new -x509 -days 365 -key 01 -keyform engine -out ca.crt -config ./openssl.conf -engine pkcs11
+
+用卡内密钥生成证书请求
+openssl req -new -key 01 -keyform engine -out req.csr -config ./openssl.conf  -engine pkcs11
+
+ca.crt是文件，在用CA给client签名的时候指向卡内密钥和ca.crt证书问价
+
+【用卡内密钥对和文件证书给用户签名】
+# $1 client.csr
+# $2 ca.crt
+# $3 CA key id
+# $4 client.crt
+
+openssl x509 -sha1 -req -in $1 -CA $2 -CAkey $3 -CAkeyform engine  -out $4 -CAcreateserial  -days 365 -engine pkcs11

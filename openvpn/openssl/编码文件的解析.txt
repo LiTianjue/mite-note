@@ -1,0 +1,8 @@
+从 asn1.1 中 提取数据信息
+asn1parse    默认输入pem格式
+
+openssl asn1parse server.pem
+
+openssl asn1parse -in server.pem -inform pem
+
+openssl asn1parse -in server.der -inform der

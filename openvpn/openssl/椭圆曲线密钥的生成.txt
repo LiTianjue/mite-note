@@ -1,0 +1,23 @@
+1.openssl 中椭圆曲线的数据结构是
+	struct ec_key_st	/*EC_KEY*/
+
+2.椭圆曲线及密钥的生成（crypto/ec/ec_Key.c）
+	首先选定一条椭圆曲线：在crypto/ec/ec_curve.c中内置了67种椭圆曲线（使用EC_get_builtin_curves获取该列表）
+	根据选择的椭圆曲线计算密钥生成参数，
+	根据密钥参数来生成密钥对
+	
+3.将椭圆曲线参数定义到一个ec_key_st结构体中
+	（1）修改ec_greop_new_from_data函数，将参数定义到结构体中
+	（2）通过EC_KEY_set_private_key 和 EC_KEY_set_public_key,将私钥和公钥定义到ec_key_st结构体中
+		或者自定义一个私钥，然后通过EC_POINT_mul计算出公钥
+	
+
+
+sm2签名原始数据长度没有限制，签名结果为64字节
+sm2加密算法支持128G字节数据长度，加密结果增加96字节
+
+sm2 加密强度为256位
+sm1 对称算法，加密强度为128位，采用硬件实现
+sm3 密码杂凑算法，杂凑值长度为32字节，和SM2算法同期公布
+sm4 对称算法，已公布，软件实现，加密强度为128位
+

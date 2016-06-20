@@ -1,0 +1,101 @@
+原文连接
+https://wiki.nikhef.nl/grid/Storing_your_grid_certificate_on_an_Aladdin_eToken
+说明：不是原文的翻译，只是提取了其中的一些内容和自己实际操作的过程中遇到的问题整理的
+	邮箱换成我自己的
+
+使用pkcs11-tool操作加密卡的用法
+准备
+1.pkcs11库
+	一般加密卡厂商提供，标准的pkcs11接口，是一个动态库文件。原文中是		PKCS11_MOD=/usr/local/lib/libetpkcs11.so
+
+2.openssl pkcs11_engine	（这篇文章中没有提到怎么配置pkcs11-engine,我会单独写一个介绍）
+	openssl 使用的engine 库
+	export PKCS11_ENG=/opt/etoken-pro/lib/engine_pkcs11.so
+
+3.其他，这些干啥不是很清楚
+	export PROXY_PATHLENGTH=2
+ 	export PROXY_POLICY=normal_policy
+ 	export PROXY_STYLE=legacy_proxy
+ 	export PATH=$PWD/etoken-pro/bin:$PATH
+ 	export LD_LIBRARY_PATH=$PWD/etoken-pro/lib:$LD_LIBRARY_PATH
+
+
+创建卡内密钥对证书
+开始1 	： 创建卡内私钥
+	pkcs11-tool 	--module $PKCS11_MOD \
+        	       	--keypairgen --key-type rsa:1024  \
+               		--login \
+               		--label "mhpmii@126.com" --id 12345678
+
+	有一些厂商的卡标准并不完全满足pkcs11-tool的
+	原文上这里应该输入pin码才能操作，
+	但实际上我手上这个卡不需要输入pin码
+	而且私钥和公钥要使用不同的label才能存储到卡内
+	我的修改办法是
+	a.在pkcs11-tool源码中去掉pin码验证的代码（虽然我不会用这条命令生成密钥对但是使用的时候还是会遇到同样的问题，所以提前去掉了）
+	b.通过厂家给的demo单独写了一个生成密钥对的程序
+	//不管怎么样，我们假设已经生成了卡内密钥对
+
+
+开始2	： 生成证书请求(p10)
+	这一步需要用到openssl 而且配置好pkcs11-engine
+	openssl req -engine pkcs11 -keyform engine -key [<slotnr>:]12345678 -new -text \
+               -out newcert.csr -config openssl.cnf \
+               -subj "/O=dutchgrid/O=users/O=nikhef/CN=Jan Just Keijser"
+
+	这里取key通过keid取出，前面说了pin码的问题，本来是要输入pin码的，我给注释掉了
+	其实这里没有改pkcs11-tool的代码，而是改了另外一个库的代码libp11
+
+
+开始3	：证书请求要拿给CA去签名，写回加密卡
+	签名过程不再赘述，签名后得到一个pem格式的文件
+	这种格式的文件是写不进加密卡的，要转换格式后才能写入（der编码）
+	openssl x509 -in newcert.pem -outform der -out newcert.der
+	然后我们把他写回加密卡
+	 pkcs11-tool --module $PKCS11_MOD \
+               	     -w newcert.der --type cert \
+                     --login \
+                     --label "mhpmii@126.com" --id 12345678 
+	注意这里的id和label要和私钥的完全一致
+
+
+到这一步我们就得到了存储有私钥和证书的加密卡
+
+/*************************************/
+使用外部证书 usercert.pem and userkey.pem
+/************************************/
+1.转码，前面说了密码卡只认识der编码的文件
+openssl x509 -in ~/.globus/usercert.pem -outform der -out usercert.der
+
+2.导入证书文件（此时是没有私钥的）
+pkcs11-tool --module $PKCS11_MOD \
+               --label "My Grid Certificate" \
+               --id 1234 \
+               --login \
+               -w usercert.der \
+               --type cert
+
+3.导入私钥文件
+openssl rsa -in ~/.globus/userkey.pem -outform der | \
+     (sleep 10 ; pkcs11-tool --module $PKCS11_MOD \
+                             --label "My Grid Certificate"  \
+                             --id 1234 \ 
+                             --login \
+                             -w /proc/self/fd/0 \
+                             --type privkey )
+
+这里有多个重要的细节
+	1.sleep 10避免同时出现两个密码提示符，读取私钥的时候可能是加密的，导入的时候key需要pin码
+	2.id和label同样需要和证书保持一致
+	3.-w /proc/self/fd/0 解决pkcs11-tool不接受标准输出的问题
+
+
+4.查看卡内证书和私钥
+	pkcs11-tool --module $PKCS11_MOD -O -l 
+
+	
+
+
+
+
+

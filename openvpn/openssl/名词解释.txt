@@ -1,0 +1,90 @@
+1.签名密钥
+	签名者的私钥
+
+2.签名过程
+	输入消息，签名密钥，椭圆曲线系统参数，输出数字签名的过程
+
+
+3.数字签名算法
+	椭圆曲线系统参数
+	用户密钥对
+	辅助函数：
+		杂凑函数（SM3）
+		随机数发生器
+	用户信息
+
+
+4.素数域
+sa，dsa，dh等都是在什么域上的，其实它们都是在素数域上的，所有的素数域都是一样的，所以对于rsa，dsa或者dh来讲，都是可以直接计算的，比如要产生一个大素数，那么就直接产生好了
+
+5.群环域
+可是曲线域怎么理解，顾名思义就是定义在一条曲线上的点组成的集合加上一些操作，每一条曲线都拥有一个曲线域，这么说来曲线域并不是唯一的，而是有无穷多个，于是我们在进行计算的时候必须要指明是在哪一条曲线上进行操作，因此必然在实现上要比rsa等素数域上的算法多一个数据结构，这个数据结构就是EC_GROUP，一旦group确定，其余的操作流程就基本和素数域上的一致了，不过也只是流程的一致，具体操作方法并不相同。不同的原因是因为域这个概念对各种操作可以实现重载
+
+6.ECC的原理
+ecc的原理是先将数据编码到曲线上的点，然后将该“点”运算后传输，可能是编码的过程以及计算的过程对于大数据量很消耗时间和空间，因此不便采用，rsa等非对称算法也有类似问题，对于加密/解密来讲，最好还是用对称算法，非对称算法用来协商对称密钥比较好。ecc主要优势是安全性相对强，劣势也很明显，就是效率很差
+
+
+
+
+
+7.EVP_PKEY
+openssl将所有的关于“密钥”的信息全部放入一个结构体中
+括密钥本身和关于这些密钥的操作，这些操作中最重要的就是诸如产生密钥以及验证签名之类的操作了
+将engine封装到key当中是个很好的设计，因为几乎所有的加密解密签名验证操作都是围绕着key进行的，所以engine几乎都在key相关的结构中
+
+
+
+8.openssl 对于ecc签名验证的执行过程
+	1.openssl verify ECC Ca证书和用户证书
+	2.程序进入verify.c 提取证书，验证证书链，提取签名算法，提取公钥
+	3.X509_get_pubkey得到EVP_PKEY结构，根据x509结构可以得到签名算法及公钥本身，然后根据签名算法的oid可以得到相应的密钥的type,然后
+	else if(ret->type == EVP_PKEY_EC)
+	{
+		if(a->parameter &&(a->parameter->type == V_ASN1_SEQUENCE)){
+			if(ret->pkey.ec=EC_KEY_new())==NULL//初始化ec_key_st	
+		}		
+	}
+
+	4.进入x509_verify进行验证签名，首先要对签名的消息重新做摘要，然后再验证
+		：函数ASN1_item_verify的逻辑很明白，使用了EVP_MD
+		EVP_MD是一个很重要的数据结构，EVP_MD是一个逻辑上比engine更上层的封装，EVP_MD可以看作是逻辑封装，而engine则是实现这些逻辑的算法封装：
+		EVP_系列函数是openssl密码学实现最上层的逻辑。
+	5.调用EVP_VerifyInit_ex，该函数会从默认engine中寻找对应type的EVP_MD，如果你有自己的engine并且实现了对应的EVP_MD，那么就可以通过加载自己的engine来使用自己的EVP_MD；顺便说一句，EVP_MD从engine中的提取过程和cipher从engine中的提取过程无异。
+	6.调用EVP_VerifyUpdate
+	7.调用EVP_VerifyFinal完成最后的步骤。
+	在EVP_VerifyFinal中首先调用EVP_DigestFinal_ex完成摘要的计算过程，随后调用EVP_MD的verify回调函数：   
+	8.对于ecc来讲，该回调函数verify就是ECDSA_verify，该函数最终调用ECDSA_do_verify：
+	int ECDSA_do_verify(const unsigned char *dgst, int dgst_len, 
+        const ECDSA_SIG *sig, EC_KEY *eckey)
+	{ //该回调函数最后一个参数之所以会随着算法的不同而不同是因为pkey成员是个联合
+    		ECDSA_DATA *ecdsa = ecdsa_check(eckey);
+    		return ecdsa->meth->ecdsa_do_verify(dgst, dgst_len, sig, eckey);	
+	}
+	
+	9.最终ecdsa_check决定了现在要使用的是EC_KEY中的method_data中的类型为ECDSA_DATA的数据；
+	
+	10.接下来调用ECDSA_METHOD的ecdsa_do_verify完成最后的操作。
+	
+	以上10个步骤就是verify命令需要执行的步骤，对于x509命令签发证书的步骤来讲也是一样的，只不过将verify换成了sign而已。如果对比rsa的签名和验证过程就会发现ecc多了一个步骤，这个多出来的步骤就是ecdsa_check的过程。
+	
+
+
+		
+
+HSM 	硬件加密机
+HMAC  	是密钥相关的哈希运算
+MagPro CSP
+
+ECIES	Elliptic Curve Integrated Encryption System; Certicom Corp)
+
+
+
+
+
+
+
+
+
+
+
+

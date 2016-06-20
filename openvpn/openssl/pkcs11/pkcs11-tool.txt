@@ -1,0 +1,37 @@
+查看加密卡
+ pkcs11-tool --module=$P11_MOD -O
+
+
+
+删除证书
+ pkcs11-tool --module=$P11_MOD -y cert -b -a RSA_PRIVATE_KEY_0 -d 5253415f4b4559504149525f30
+#注意这个操作会把密钥对也删除了
+
+
+写证书到加密卡
+pkcs11-tool --module=$P11_MOD -y cert -w  ca.der -a RSA_PRIVATE_KEY_0 -d 5253415f4b4559504149525f30
+
+生成卡内密钥对
+pkcs11-tool 	--module $P11_MOD --keypairgen --key-type rsa:1024 --label "RSA_01" --id 12345678
+
+删除卡内密钥对 指定id好像删除不了，只能指定Label
+pkcs11-tool --module=$P11_MOD -y  privkey  -b -a RSA_PRIVATE_KEY_0 -d 5253415f4b4559504149525f30
+
+删除卡内对象data
+pkcs11-tool --module=$P11_MOD -y  data  -b -a  'this is a data object!'
+
+
+
+openssl 使用engine 指定卡内数据的 参考RFC7512 关于pkcs11 uri的写法
+必要参数 -keyform engine
+	 -engine pkcs11
+	 -key label_RSA_PRIVATE_KEY_0
+-keyform engine
+
+
+
+
+
+
+
+ openssl x509 -set_serial 314446913909333030175100046242242307955 -req -in client.csr  -sha1 -extfile myca.config  -extensions certificate_client -CA ca.crt -CAkey label_RSA_PRIVATE_KEY_1 -keyform engine -CAcreateserial -out client.crt -days 365 -engine pkcs11
