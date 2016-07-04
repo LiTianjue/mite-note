@@ -1,0 +1,11 @@
+1.查看证书信息
+openssl x509 -noout -text -inform pem -in client.crt
+
+2.key
+   打印密钥信息
+   openssl ec -text -in client.key
+
+    openssl ec -in myserver.key -out server.key.insecure
+
+    输出公钥
+          -pubout

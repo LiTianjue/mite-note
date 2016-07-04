@@ -1,0 +1,35 @@
+
+1.openssl genrsa -out selfsign.key 1024
+1024 的 RSA密钥是如何生成的：
+包含 
+      BIGNUM *n;        //模数
+
+       BIGNUM *e;       //公钥指数
+
+       BIGNUM *d;       //私钥指数
+
+       BIGNUM *p;       //最初的大素数
+
+       BIGNUM *q;           // 最初的大素数
+
+       BIGNUM *dmp1;
+
+       BIGNUM *dmq1;
+
+       BIGNUM *iqmp;
+
+
+公钥是 n 和 e
+私钥是 n  和 d
+
+//rsa = RSA_new_Method();
+rsa = RSA_generate_key(bite,e,NULL,NULL);   //e 3,17,65537
+
+BIGNUM *bne;
+bne = BN_new();
+ret = BN_set_word(bne,e);
+r = RSA_new();
+ret = RSA_generate_key_ex(r,bits,bne,NULL);
+  ret=RSA_generate_key_ex(r,bits,bne,NULL);
+
+  PEM_write_bio()
