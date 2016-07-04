@@ -1,0 +1,13 @@
+
+1.通过安装包一键安装
+	只需要配置GOPATH
+	通过 go env 查看
+
+2.GOPATH结构
+	bin
+	pkg
+	src
+
+3.subl中ctrl＋b　可以直接执行命令行
+
+
