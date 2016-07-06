@@ -21,3 +21,70 @@ sm1 对称算法，加密强度为128位，采用硬件实现
 sm3 密码杂凑算法，杂凑值长度为32字节，和SM2算法同期公布
 sm4 对称算法，已公布，软件实现，加密强度为128位
 
+
+
+4.椭圆曲线的一些术语
+    1)    椭圆曲线的阶(order of a curve)
+            椭圆曲线所有点的个数，包含无穷远点；
+
+    2)    椭圆曲线上点的阶(order of a point)
+            P为椭圆曲线上的点，nP=无穷远点，n取最小整数，既是P的阶；
+
+    3)    基点(base point)
+            椭圆曲线参数之一，用G表示，是椭圆曲线上都一个点；
+
+    4)    余因子(cofactor)
+            椭圆曲线的余因子，用h表示，为椭圆曲线点的个数/基点的阶
+
+    5)    椭圆曲线参数：
+            素数域:
+            (p，a，b，G，n，h)
+            其中，p为素数，确定Fp，a和b确定椭圆曲线方程，G为基点，n为G的阶，h为余因子。
+
+            二进制扩展域:
+            (m，f(x)，a，b，G，n，h)
+            其中，m确定F2m，f(x)为不可约多项式，a和b用于确定椭圆曲线方程，G为基点，n为G的阶，h为余因子。
+
+    (6)    椭圆曲线公钥和私钥
+              椭圆曲线的私钥是一个随机整数，小于n；
+              椭圆曲线的公钥是椭圆曲线上的一个点：Q＝私钥*G。
+
+
+5. 椭圆曲线算法的签名数据结构
+        typedef struct ECDSA_SIG_st
+        {
+              BIGNUM *r;
+
+              BIGNUM *s;
+
+        } ECDSA_SIG;
+
+6.签名与验签
+    
+7.密钥交换
+
+8. 签名验证签名的过程
+    提取证书，提取签名算法，提取公钥
+    得到EVP_PKEY结构，得到签名算法及公钥本身，根据签名算法的oid可以得到密钥的type
+    然后：
+        if (ret->type == EVP_PKEY_EC)   
+             if (a->parameter && (a->parameter->type == V_ASN1_SEQUENCE)){
+                    if ((ret->pkey.ec= EC_KEY_new()) == NULL) //初始化ec_key_st
+                    ...
+
+    对需要签名的消息做摘要，然后在验证
+    ASN1_item_verify
+    int ASN1_item_verify(const ASN1_ITEM *it, X509_ALGOR *a, ASN1_BIT_STRING *signature, void *asn, EVP_PKEY *pkey)
+{
+    EVP_MD_CTX ctx;
+    const EVP_MD *type;
+    EVP_MD_CTX_init(&ctx);
+    i=OBJ_obj2nid(a->algorithm); //得到算法的nid
+    type=EVP_get_digestbyname(OBJ_nid2sn(i)); //得到对应nid算法的摘要处理函数结构，注释1
+    EVP_VerifyInit_ex(&ctx,type, NULL);
+    inl = ASN1_item_i2d(asn, &buf_in, it);
+    EVP_VerifyUpdate(&ctx,(unsigned char *)buf_in,inl);
+    EVP_VerifyFinal(&ctx,(unsigned char *)signature->data,
+            (unsigned int)signature->length,pkey);//实现验证
+...
+}

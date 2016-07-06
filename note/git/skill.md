@@ -18,3 +18,16 @@
 
 	//如果不加 --cached ,那本地文件也会被删除掉
 
+
+6. 当不小心提交了大文件
+    提交了大文件，本地数据库被跟新，但是当你想向服务器提交的时候，会出现100M限制的问题
+
+You need to:
+
+use BFG Repo Cleaner, as suggested above.
+
+bfg --strip-blobs-bigger-than 1M  my-repo.git
+use 
+git gc --agrressive --prune=now (after BFG), as detailed in "Reduce git repository size"
+
+git push -f to force the new history on your remote repo.

@@ -4,7 +4,7 @@ openssl x509 -noout -text -inform pem -in client.crt
 2.key
    打印密钥信息
    openssl ec -text -in client.key
-
+   去除密钥中的密码
     openssl ec -in myserver.key -out server.key.insecure
 
     输出公钥
