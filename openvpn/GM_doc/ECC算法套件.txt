@@ -1,0 +1,288 @@
+
+1. 简介
+	ECC是一个公钥密码机制，相比RSA，用更小的秘钥长度，提供相同的安全性
+	ECDH 方案通过用一个长期的或者临时的秘钥创建TLS预主秘钥
+	通过　fixed-ECDH证书　和　ECDSA　来认证TLS的对端
+
+	(1) TLS 的　ECC-based 秘钥交换算法
+	(2) 基于ECC证书的客户端认证,TLS扩展项允许客户端协商曲线信息和点格式
+	(3) 描述基于ECC算法握手中使用的变量和结构体，编码在TLS消息中，和对这些消息的处理
+	(4) 定义基于ECC的算法套件和实现
+	(5) 关于安全性的注意事项
+	(6) IANA
+
+2.秘钥交换算法
+	介绍5种基于ECC的秘钥交换算法
+	所有的算法都使用ECDH来计算预主秘钥
+	不同点在于　ECDH秘钥的生命周期，长期的或者临时的
+	RFC算法(主密钥和工作秘钥的生成)视秘钥交换算法而定，和ECC没有直接关系
+	秘钥交换算法		描述
+	ECDH_ECDSA			Fixed ECDH with ECDSA-signed certificates.
+	ECDHE_ECDSA			Ephemeral ECDH with ECDSA signatures.
+	ECDH_RSA			Fixed ECDH with RSA-signed certificates.
+	ECDHE_RSA			Ephemeral ECDH with RSA signatures.
+	ECDH_anon			Anonymous ECDH, no signatures.
+
+	(1) ECDHE_RSA　可以使用现有的RSA证书，使用客户端提供的曲线做ECDH
+					但是比传统RSA有更高的计算量
+	(2) ECDH_RSA	要求服务器有ECC证书，可以使用RSA做证书签名
+	(3) ECDH_ECDSA	要求服务器有ECC密钥对和证书，不支持RSA
+	(4) ECDH_anon	不提供认证
+	注意：
+		ECDH 和 ECDHE　秘钥在结构上没有差别，证书签发者通过证书的keyUsage
+		和extendedKeyUsage extensions来限制秘钥的用法
+
+2.1 ECDH_ECDSA
+	服务器必须包含ECDH公钥且用ECDSA签名的证书
+	不会发送ServerKeyExchange
+	客户端生成和服务器公钥在同一曲线上的ECDH密钥对并且通过
+	ClientKeyExchange 发送其中的公钥到服务器
+
+2.2 ECDHE_ECDSA
+	服务器证书必须包含ECDSA公钥并且使用ECSDA签名
+	服务器通过ServerKeyExchange发送它的临时ECDH公钥和确定的曲线，这些参数
+	通过ECDSA算法使用私钥签名
+
+2.3 ECDH_RSA 
+	秘钥交换和ECDH_ECDSA一样，不同的是服务器证书使用RSA签名
+
+2.4 ECDHE_RSA
+	秘钥交换和ECDH_ECDSA一样，不同的是服务器证书使用公钥做认证
+
+2.5 ECDH_anon 
+	证书相关的消息都不会被发送,(略)
+
+/*- -*/
+3.客户端验证
+	3种客户端验证的机制
+		ECDSA_sign	
+		ECDSA_fixed_ECDH	ECDH_ECDSA and ECDH_RSA.
+		RSA_fixed_ECDH
+
+3.1 ECDSA_sign
+	 客户端必须拥有一个包含ECDSA-capable key 并且用ECDSA签名的证书
+	 通过CertificateVerify消息证明客户端是证书的合法拥有者 
+
+3.2 ECDSA_fixed_ECDH
+	客户端必须拥有一个包含ECDH-capable公钥并且用ECDSA签名的证书
+	客户端的ECDH密钥必须和服务器的长期(long-term)ECDH密钥在同一个椭圆曲线上
+	如果不在一个曲线上，则会使用ECDSA_sign机制或者非ECC的机制(RSA)
+	使用这中验证方法，客户端必须发送一个空的ClientKeyExchange
+	并且不发送CertificateVerify 消息
+	ClientKeyExchange 服务器请求客户端的ECDH公钥计算预主密钥
+
+3.3 RSA_fixed_ECDH
+	客户端证书必须用 RSA算法签名
+
+
+
+/*- ----------- -*/
+4. ECC 的 TLS扩展(TLS Extensions)
+	i : 支持的椭圆曲线扩展 (Elliptic Curves)
+	ii: 支持的点格式扩展(Point Formats)
+	用于约定客户端只支持有限的曲线和点格式
+	客户端通过ClientHello 发送他所支持的椭圆曲线及能解析的点格式
+	服务器ServerHello 中也会列出能解析的点格式
+
+	客户端在ClientHello消息中列出ECC 算法套件并且包含扩展信息
+	服务器在选择算法套件的时候必须支持扩展项中的约定
+
+	如果客户端选择在ClientHello中不包含这些扩展信息，
+	服务器可以自行选择椭圆曲线和点格式
+	在回话重用的时候，服务器会忽略掉扩展信息，只在生成新回话的时候有用
+
+/*- --------------- -*/
+5. 数据结构和计算
+
+5.1 Client Hello Extensions
+	enum {
+		elliptic_curves(10),
+		ec_point_formats(11) }
+	
+	服务端根据收到的扩展项，选择使用合适的算法套件
+	服务器必须使用客户端支持的曲线和点格式来做握手协商
+	注意：
+		服务器在ECDHE-ECDSA密钥交换的时候可能会选用和证书的ECDSA密钥及ServerKeyExchange中临时ECDH密钥不一样的曲线
+
+5.1.1 支持的椭圆曲线扩展
+	enum {
+		sect163k1(1),sect162r1(2),
+		...
+		secp521r1 (25),
+		reserved (0xFE00..0xFEFF),
+		rbitrary_explicit_prime_curves(0xFF01),
+		arbitrary_explicit_char2_curves(0xFF02),
+		(0xFFFF)
+	} NamedCurve
+	其中1-25是ANSI X9.62 和 FIPS 186-2 推荐曲线
+	0xFE00 - 0xFEFF 是为私有曲线的保留
+	0xFF01和0xFF02 指示客户端支持任意的prime和characteristic-2曲线(曲线参数必须使用ECParameters显式的编码)
+	在TLS Extensions中，elliptic_curve_list那客户端的喜好进行排列
+	结构是
+	struct {
+		NamedCurve elliptic_curve_list<1..2^16 -1>
+	} EllipticCurveList;
+
+5.1.2 点格式(Point Formats)的扩展支持
+	 enum { uncompressed (0), ansiX962_compressed_prime (1),
+		    ansiX962_compressed_char2 (2), reserved (248..255)
+	 } ECPointFormat;
+     struct {
+		 ECPointFormat ec_point_format_list<1..2^8-1>
+	 } ECPointFormatList;
+
+	3种格式，默认是uncompressed
+
+
+5.2 Server Hello 的Extension
+	ServerHello 中会包含服务器支持的 Point Formats用于协商密码套件
+	客户端收到服务的点格式，将会采用服务器的格式来做握手
+	如果Server Hello 中未含有该信息，那么等于只允许使用未压缩的点格式
+
+5.3 Server Certificate
+	在所有非匿名(non-anonymnous)的基于ECC的密钥交换协议中都会发送这条消息
+	用于认证中传送服务器的公钥给客户端
+	公钥必须是被编码在公钥证书中
+	该消息承载的是证书链,服务器的公钥证书在该证书链的第一位
+	
+	密钥交换算法 服务器证书类型
+	----------------------------
+	 ECDH_ECDSA              Certificate MUST contain an
+	                         ECDH-capable public key.  It
+							 MUST be signed with ECDSA.
+
+	 ECDHE_ECDSA             Certificate MUST contain an
+							 ECDSA-capable public key.  It
+							 MUST be signed with ECDSA.
+
+	 ECDH_RSA                Certificate MUST contain an
+							 ECDH-capable public key.  It
+							 MUST be signed with RSA.
+
+	 ECDHE_RSA               Certificate MUST contain an
+							 RSA public key authorized for
+							 use in digital signatures.  It
+							 MUST be signed with RSA.
+	/*------------------------------------------------------*/
+	Certificate消息传送服务器的证书链给客户端，如果客户端消息中包含ECC Extension,
+	那么服务器的公钥证书必须遵从客户端选择的曲线,通常，服务器公钥必须使用一个命名的曲线
+	客户端收到服务器器证书
+		(1) 验证证书链
+		(2) 提取服务器的公钥
+		(3) 检查证书类型是否能用于协商好的密钥算法
+
+5.4 Server Key Exchange
+	ECDHE_ECDSA，ECDHE_RSA,ECDH_anon的密钥交换算法会发送这条消息
+	用于传送服务器的临时ECDH公钥和相应的椭圆曲线域参数给客户端
+	消息结构
+	enum {explicit_prime (1), explicit_char2 (2),
+		  named_curve (3), reserved(248..255) } ECCurveType;
+
+	select (KeyExchangeAlgorithm) {
+		case ec_diffie_hellman:
+			ServerECDHParams    params;
+			Signature           signed_params;
+	} ServerKeyExchange;
+	params:
+		ECDH公钥，类型，椭圆参数
+	signed_params params的签名
+	签名数据：
+	(ClientHello.random + 
+	 ServerHello.random +
+	 ServerKeyExchange.params);
+
+	ECDHE_RSA 密钥交换使用RSA做数据签名
+	ECDHE_ECDSA 使用 ECDSA做签名,签名结果是一对整数(r,s),使用DER编码传输
+
+	客户端收到数据：
+		(1) 验证签名
+		(2) 检索服务器椭圆曲线的域参数和临时的ECDH公钥
+
+
+5.5 Certificate Request
+	服务器发送该消息来给出客户端认证的方法
+	结构
+	enum {
+		ecdsa_sign(64), rsa_fixed_ecdh(65),
+		ecdsa_fixed_ecdh(66), (255)
+	} ClientCertificateType;
+	服务器决定客户端的认证方法
+	客户端决定是否有一个配套的证书支持服务器要求的认证方法
+
+5.6 Client Certificate
+	当客户端收到服务器的证书请求，会检查是否有一个匹配的证书支持客户端认证方法，
+	该消息用于传送客户端的公钥证书刀到服务器做认证，
+	同样的，客户端的Client Certificate也传送的是一个证书链，
+	我们所说的客户端证书就在证书链的第一位
+	服务器接收到证书以后
+	(1) 提取客户端的公钥
+	(2) 检查公钥是否符合客户端认证的方法
+
+5.7 Client Key Exchange
+	所有的密钥交换算法都会发送这条消息
+	如果客户端的认证方法是 ECDSA_fixed_ECDH 或 RSA_fixed_ECDH ，这条消息是空的
+	否则，这条消息将会包含客户端的临时ECDH公钥
+	结构
+	struct {
+		select (PublicValueEncoding) {
+			case implicit: struct { };	//隐式，证书公钥
+			case explicit: ECPoint ecdh_Yc;//显式样，临时公钥
+		} ecdh_public;
+	} ClientECDiffieHellmanPublic;
+
+	客户端通过服务器发来的ECKAS-DH1方案(来自IEEE 1363)选择一个临时ECDH公钥
+	然后将公钥信息传送到服务器
+
+	服务器收到客户端的临时公钥，检查是不是和服务器的ECDH密钥在同一个曲线上
+
+5.8 Certificate Verify 
+	客户端发送使用客户端私钥签名的数据
+	即客户端有用于签名数据的私钥就能够证明他是证书的合法拥有者
+	通过摘要算法计算本次消息之前的所有握手消息的摘要(一般是SHA1)
+	ECDSA 签名数据是两个整数(r,s)通过DER编码发送
+
+	客户端
+	(1) 接收签名数据
+	(2) 通过客户端的公钥验证签名
+
+5.9 ECC证书
+	ECC证书包含ECC公钥
+	客户端应该使用 ANSI X9.62 ,FIPS 186-2,SEC 2推荐的椭圆曲线
+
+
+6.算法套件
+	CipherSuite TLS_ECDH_ECDSA_WITH_NULL_SHA           = { 0xC0, 0x01 }
+	CipherSuite TLS_ECDH_ECDSA_WITH_RC4_128_SHA        = { 0xC0, 0x02 }
+	CipherSuite TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA   = { 0xC0, 0x03 }
+	CipherSuite TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA    = { 0xC0, 0x04 }
+	CipherSuite TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA    = { 0xC0, 0x05 }
+	CipherSuite TLS_ECDHE_ECDSA_WITH_NULL_SHA          = { 0xC0, 0x06 }
+	CipherSuite TLS_ECDHE_ECDSA_WITH_RC4_128_SHA       = { 0xC0, 0x07 }
+	CipherSuite TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA  = { 0xC0, 0x08 }
+	CipherSuite TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA   = { 0xC0, 0x09 }
+	CipherSuite TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA   = { 0xC0, 0x0A }
+	CipherSuite TLS_ECDH_RSA_WITH_NULL_SHA             = { 0xC0, 0x0B }
+	CipherSuite TLS_ECDH_RSA_WITH_RC4_128_SHA          = { 0xC0, 0x0C }
+	CipherSuite TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA     = { 0xC0, 0x0D }
+	CipherSuite TLS_ECDH_RSA_WITH_AES_128_CBC_SHA      = { 0xC0, 0x0E }
+	CipherSuite TLS_ECDH_RSA_WITH_AES_256_CBC_SHA      = { 0xC0, 0x0F }
+	CipherSuite TLS_ECDHE_RSA_WITH_NULL_SHA            = { 0xC0, 0x10 }
+	CipherSuite TLS_ECDHE_RSA_WITH_RC4_128_SHA         = { 0xC0, 0x11 }
+	CipherSuite TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA    = { 0xC0, 0x12 }
+	CipherSuite TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA     = { 0xC0, 0x13 }
+	CipherSuite TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA     = { 0xC0, 0x14 }
+	CipherSuite TLS_ECDH_anon_WITH_NULL_SHA            = { 0xC0, 0x15 }
+	CipherSuite TLS_ECDH_anon_WITH_RC4_128_SHA         = { 0xC0, 0x16 }
+	CipherSuite TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA    = { 0xC0, 0x17 }
+	CipherSuite TLS_ECDH_anon_WITH_AES_128_CBC_SHA     = { 0xC0, 0x18 }
+	CipherSuite TLS_ECDH_anon_WITH_AES_256_CBC_SHA     = { 0xC0, 0x19 }
+
+	服务器实现理论上应该支持以上所有算法套件，
+	客户端实现应该支持一下至少一种算法套件
+	TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA,
+	TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,
+	TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, and
+	TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA.
+
+
+7.安全考虑
