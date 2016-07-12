@@ -90,6 +90,10 @@
 	用git remote 来查看服务器相关信息
 	git remote show origin
 
+	修改
+	git remote rm origin 
+	git remote add origin
+
 	创建新的remote 设置 ,这样就可以使用project1来代替远程地址
 	git remote add project1 git@git.com
 
