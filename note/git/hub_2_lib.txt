@@ -1,0 +1,16 @@
+git hub上的代码迁移到gitlib上作为私有仓库
+不相改变本地工程目录
+1. 在gitLib上导入github的工程
+2. 在本地
+    删除gitHub的远程仓库
+    git remote rm origin
+    添加gitLib的远程仓库
+    git remote add origin <gitLib的远程仓库地址>
+
+     查看git remote show origin
+
+ 提交的时候记住新的origin
+     git push -u origin master
+
+    强制提交本地的更新到远端，等于会用本地的仓库替换远程的，远程的会丢失，慎用
+    git push -u origin master -f
