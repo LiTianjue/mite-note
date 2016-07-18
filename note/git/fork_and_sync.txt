@@ -16,3 +16,10 @@
 	或者
 	git push [自己的仓库] [当前rebase后的分支]
 
+
+
+# 如何提交pull request
+	1.fork别人的代码并保持更新
+	2.新建一个分支并在上面做修改
+	3.提交分支跟新
+	4.提交pull request
