@@ -1,0 +1,18 @@
+# fork 了别人的代码如何保持更新
+
+1. 添加上游的代码仓库
+	git remote add upstream https://github.xxx
+
+	查看
+	git remote -v
+
+2. 和上游的版本库同步
+	2.1 git remote update upstream
+	2.2 git rebase upstream/{branch name}
+	注意2.2的操作，会将当前的分支重置为上游分支，所以最好先checkout到指定分支
+
+3. 提交代码到自己fork的仓库
+	git push 
+	或者
+	git push [自己的仓库] [当前rebase后的分支]
+
