@@ -1,0 +1,43 @@
+
+
+openvpn抓包数据
+
+2字节     |  包长度 |  
+1字节     |  操作码（高5位）+key_id（低三位）|
+8字节     | Session ID |
+1字节     | 包长度 |
+1字节     | 包序号 |
+
+ 头三个包除了和tcp一样三次握手，还协商了一个信息，那就是密钥交换算法
+[1]
+ 第一个数据包的操作码是0x38 ,左移5位就是7,表示第二类密钥协商算法
+ 然后第二行是一个Session ID,标识了一个连接，是单向的，每个方向一个
+ 一个可选的HMAC
+  packet_id + 时间戳(8字节可选)
+[2] 
+第二个数据包的操作码也标识了密钥交换算法，0x08标识服务器使用第二类密钥交换算法
+
+
+改造过的国密VPN能够重新初始化，并创建虚拟网卡，分配虚拟IP
+但是不能ping通
+自己做的改法，添加一条路由
+route add default gw 10.8.0.1
+
+网上参考的做法
+# 允许 TUN 接口连接到 OpenVPN 服务器
+iptables -A INPUT -i tun+ -j ACCEPT
+
+ # 允许 TUN  接口的连接可以被其他接口转发
+iptables -A FORWARD -i tun+ -j ACCEPT
+
+ # 允许TAP 接口连接到  OpenVPN 服务器
+iptables -A INPUT -i tap+ -j ACCEPT
+
+ # 允许 TAP 接口的连接可以被其他接口转发
+iptables -A FORWARD -i tap+ -j ACCEPT
+
+在 Windows XP,防火墙可以通过 Control Panel -> Security Center -> Windows Firewall -> Advanced. In the Network Connection Settings control, uncheck the box corresponding to the TAP-Win32 adapter.
+
+Note that if you want OpenVPN clients to be able access other machines on the LAN, it is not enough to merely disable firewalling on the TUN/TAP adapter. You must also enable IP forwarding and set up a return route from the LAN gateway to the OpenVPN server. This is discussed at length in the HOWTO.
+
+Also note that firewalling the TUN/TAP interface is a completely separate operation from firewalling the internet-facing interface. For example, suppose an OpenVPN client is sending email via SMTP over the OpenVPN tunnel. The OpenVPN server firewall will need to allow both incoming encrypted data on TCP/UDP port 1194 via the internet-facing interface as well as incoming SMTP connections via the TUN/TAP interface.

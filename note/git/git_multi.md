@@ -15,3 +15,11 @@ git submodule update --init --recursive
 5.submodule的删除
 在.gitmodules 文件中删除相应配置信息。
 然后，执行git rm cached 命令将子模块所在的文件从git中删除。
+
+
+6. 子模块更新后，管理工程版本停留在该工程的位置
+    cd 到子模块
+    git checkout master
+    git pull
+
+    回到父级模块，更新版本号
