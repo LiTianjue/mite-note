@@ -1,0 +1,28 @@
+sudo apt-get install apt-transport-https  
+# Add the Docker repository key to your local keychain  
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9  
+# Add the Docker repository to your apt sources list.  
+sudo sh -c "echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"  
+# update your sources list  
+sudo apt-get update  
+   
+# 之后通过下面命令来安装最新版本的docker：  
+apt-get install -y lxc-docker  
+# 以后更新则：  
+apt-get update -y lxc-docker  
+  
+ln -sf /usr/bin/docker /usr/local/bin/docker  
+
+//重启服务
+sudo service docker restart
+
+提示
+
+Failed to start docker.service: Unit docker.service is masked.
+解决方案：
+
+执行如下三条指令
+
+systemctl unmask docker.service
+systemctl unmask docker.socket
+systemctl start docker.service
