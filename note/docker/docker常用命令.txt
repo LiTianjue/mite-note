@@ -106,8 +106,12 @@ Dockerfile的EXPOSE相当于docker run --expose，提供container之间的端口访问。docker
 
 
 
-
-
+挂载目录
+-v 选项
+-v 本地路径:容器路径
+-v 本地路径:容器路径:ro		//只读挂载
+也可以挂载单个文件
+-v /home/andy/.vimrc:/root/.vimrc
 
 
 
