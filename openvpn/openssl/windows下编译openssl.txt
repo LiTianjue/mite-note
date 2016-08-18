@@ -1,0 +1,48 @@
+准备
+    安装perl
+    使用 VS自带的命令提示符工具，可以省去配置环境变量，主要是指nmake
+
+1. 配置 
+perl Configure VC-WIN32  --prefix=C:\openssl 
+no-asm    (不加这个选项可能会编译不过)
+
+2.创建makefile
+    ms\do_ms
+    ms\do_nams
+
+3.编译
+    nmake -f ms\ntdll.mak
+    nmake -f  ms\ntdll.mak clean
+
+4. out32dll目录下可以找到
+     ssleay32.lib
+     libeay32.lib 
+     openssl.exe
+
+5.头文件被放在inc32目录下
+
+6.如果指定了安装目录
+nmake -f  ms\ntdll.mak install
+
+
+注意，如果编译错误，要先执行
+ nmake -f  ms\ntdll.mak clean
+ 清一下数据
+
+ vc或者vs编译器没有inttypes.h文件，但是支持stdint.h
+ 在网上搜索，发现了msinttypes，它提供了兼容VC的stdint.h、inttypes.h。地址是
+http://code.google.com/p/msinttypes/
+
+或者直接将inttypes.h 改为stdint.h
+但是VC编译器甚至不支持stdint.h，这个要注意
+
+
+7.GMSSL项目
+    GMSSL项目在evp.h文件中增加了两个函数
+    使用ms\do_ms.bat 的时候会提示这两个函数不存在
+    可以按照原来有的格式将这两个函数加入到util/libeay.num 中去
+
+    在做SM2证书公钥加密的时候我们用到了SM2的API,但是这部分并没有加入libeay.num中去
+    参考http://www.tuicool.com/articles/MfiE7n
+    修改mkder.pl文件，然后用perl 命令更新
+    perl util/mkdef.pl crypto update
