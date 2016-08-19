@@ -46,3 +46,5 @@ http://code.google.com/p/msinttypes/
     参考http://www.tuicool.com/articles/MfiE7n
     修改mkder.pl文件，然后用perl 命令更新
     perl util/mkdef.pl crypto update
+
+    未导出的符号直接加在.def 文件后面即可，只用加函数名
