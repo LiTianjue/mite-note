@@ -48,3 +48,16 @@ http://code.google.com/p/msinttypes/
     perl util/mkdef.pl crypto update
 
     未导出的符号直接加在.def 文件后面即可，只用加函数名
+
+
+
+    MINGW编译也没有问题
+$./config
+$ make
+$ make test
+
+需要手动安装
+ mkdir -p /c/openssl/include /c/openssl/bin /c/openssl/lib
+$ cp -r include/openssl /c/openssl/include/
+$ cp apps/openssl.exe /c/openssl/bin
+$ cp libcrypto.a libssl.a /c/openssl/lib

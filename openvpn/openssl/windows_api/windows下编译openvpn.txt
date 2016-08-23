@@ -1,0 +1,96 @@
+在linux下创建一个win32程序的编译环境
+http://qbeukes.blogspot.com/2010/08/building-cross-compiler-on-linux-for.html
+1. 下载mingw交叉编译包
+    http://qbeukes.blogspot.com/2010/08/building-cross-compiler-on-linux-for.html
+    创建一个目录~/mingw-src 并解压脚本
+    在这个目录下再创建两个目录叫做 Archive 和 Patches 
+2. 获取mingw源码包
+     http://www.sourceforge.net/projects/mingw/files/
+
+
+
+下载预编译文件
+https://openvpn.net/prebuilt/
+
+下载编译脚本
+http://sites.google.com/site/qbeukesblog/build-openvpn.tar.gz
+
+下载最新的openvpn源码
+
+
+参考官方文档
+https://community.openvpn.net/openvpn/wiki/BuildingOnWindows
+但是官方文档说了，这个编译方法只适用于之前的历史版本，新的版本有别的编译方法
+
+从原文上来看，
+传统的编译方法在windows上使用 "domake-win" 脚本
+使用MinGW提供的类unix环境的autotools 和GCC,
+但是在2011年6月29号之后，
+这个编译脚本就不好使了，
+不仅需要修改脚本，可能还和新版的openssl不兼容，出现错误
+
+下面还说了，这个脚本被抛弃的原因是被发现"维护艰难"
+所以一个新的，基于python 的编译系统被写出来了
+据说新的编译系统更好用
+
+所以你要安装的是
+vs2008
+python 
+perl
+如果要opnessl支持ASM，还要安装NASM
+
+1. 编译openssl,和网上的教程没有什么差别
+    perl Configure VC-WIN32  no-asm --prefix= < path to openssl install dir >
+    ms\do_nasm
+    namke -f ms\ntdll.mak
+    namke -f ms\ntdll.mak test
+    namke -f ms\ntdll.mak install
+
+
+2. 编译pkcs11-helper
+    拷贝刚才编译的 libeay32.lib 到 pkcs11源码目录的lib下
+     nmake -f Makefile.w32-vc clean
+     但是我编译不过，我暂时不管了
+
+3.编译lzo
+    C:\lzo-2.0.4> B\win32\vc_dll.bat
+
+4. 编译openvpn
+
+
+/************************************/
+
+又不行了。
+下载官方的openvpn-build 
+运行msvc下的build.bat
+
+1. 没有文件扩展js的脚本引擎
+在运行中输入regedit 进入注册表，
+只需要把[HKEY_CLASSES_ROOT\.js] 项下的那个默认值改成 "JSFile" 就可以正常运行JS 文件了。
+
+
+
+2. 这个子项目就是实现自动下载解压源码，然后自动编译，问题也是多多
+    不过我们可以按照他的逻辑一步一步的实现编译
+    1. 首先下载opnessl 的源码，编译之后安装到msvc\image目录下
+        openssl我们已经编译过了，这里不再详细描述
+
+    2.然后编译liblzo
+        这一步也没多少问题，
+        将编译完成的 include\lzo 拷贝到 image\include\lzo下
+        *.dll 拷贝到 image\bin
+        *.lib 拷贝到 image\lib
+
+    3. 接下来编译 pkcs11-helper
+        最新下载的会提示：
+            不知道如何生成versioninfo.res
+        编译不过，不过没关系，我们从其他地方拷贝需要的东西过去
+           *.dll 拷贝到 image\bin
+        *.lib 拷贝到 image\lib
+             将编译完成的 头文件 拷贝到 image\include下
+
+    4. 貌似还需要TAP的头文件
+    
+
+//参考原文章
+https://community.openvpn.net/openvpn/wiki/BuildingUsingGenericBuildsystem
