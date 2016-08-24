@@ -94,3 +94,11 @@ perl
 
 //参考原文章
 https://community.openvpn.net/openvpn/wiki/BuildingUsingGenericBuildsystem
+1. 编译为本地库和程序
+     IMAGEROOT=`pwd`/image-native ./build
+
+2. linux 64位下编译为windows 32位
+    IMAGEROOT=`pwd`/image-win32 CHOST=i686-w64-mingw32 CBUILD=x86_64-pc-linux-gnu ./build
+
+3.linux 64位下编译为windows 64位
+    IMAGEROOT=`pwd`/image-win64 CHOST=x86_64-w64-mingw32  CBUILD=x86_64-pc-linux-gnu ./build

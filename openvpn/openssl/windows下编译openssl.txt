@@ -49,6 +49,11 @@ http://code.google.com/p/msinttypes/
 
     未导出的符号直接加在.def 文件后面即可，只用加函数名
 
+ 使用openvpn-build 系统，在一级目录下应该会生成问crypto.def 和 ssl.def 用于生成动态库，如果没有生成
+ 则使用以下命令
+ perl util/mkdef.pl    crypto ssl NT update
+ perl util/mkdef.pl    crypto NT write > crypto.def
+ perl util/mkdef.pl    ssl NT write > ssl.def
 
 
     MINGW编译也没有问题
