@@ -23,3 +23,19 @@ git submodule update --init --recursive
     git pull
 
     回到父级模块，更新版本号
+
+
+
+    删除一个submodule
+1.删除 .gitsubmodule中对应submodule的条目
+
+2.删除 .git/config 中对应submodule的条目
+
+3.执行 git rm --cached {submodule_path}。注意，路径不要加后面的“/”。例如：你的submodule保存在 supports/libs/websocket/ 目录。执行命令为： git rm --cached supports/libs/websocket 
+
+更新submodule的URL
+1.更新 .gitsubmodule中对应submodule的条目URL
+
+2.更新 .git/config 中对应submodule的条目的URL
+
+3.执行 git submodule sync
