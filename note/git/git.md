@@ -124,3 +124,29 @@
 	git push origin :NewBranch
 
 
+8. git pull 的时候本地和服务器有冲突
+	方法1：先将本地内容暂存，pull成功之后，在查看冲突文件，进行合并
+		git pull		(失败，提示可以快进)
+		git stash	(暂存，用git stash list 可以查看)
+		git pull  	(重新pull)
+		git stash pop stash@{0}	(还原暂存的内容)
+
+		快速找回 git stash apply
+		解决冲突，再次提交
+		git stash clear
+
+		内容冲突
+		树冲突：一般是由于修改文件名造成的
+			通过
+				git rm 冲突文件
+				git rm 原始文件
+				git add 以后要使用的文件名
+				git commit 来解决
+			树冲突可以用 git mergetool来交互解决
+
+		暴力解决，手动存储好修改过的文件
+		然后使用 git rebase remote-branch-name 恢复到服务器的某个版本
+		然后在在此基础上提交更新
+
+
+

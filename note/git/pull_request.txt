@@ -1,0 +1,7 @@
+1. fork 源代码
+    鼠标一点
+
+2. git clone fork 的代码到本地
+3. http://dan.bravender.net/2011/10/20/Why_cherry-picking_should_not_be_part_of_a_normal_git_workflow.html
+
+http://www.cnblogs.com/chucklu/p/4056373.html
