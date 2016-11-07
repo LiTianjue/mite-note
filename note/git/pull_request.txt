@@ -5,3 +5,19 @@
 3. http://dan.bravender.net/2011/10/20/Why_cherry-picking_should_not_be_part_of_a_normal_git_workflow.html
 
 http://www.cnblogs.com/chucklu/p/4056373.html
+
+
+git branch <bname>
+    //创建不以当前版本为起点的分支
+    git branch <name> HEAD^^
+
+    //分支切换
+    git branch -b bname
+    //创建并切换分支
+    git checkout -b newbranch
+
+    //在分支中完成代码的修改，切换回主分支进行合并和删除分支
+    git checkout master
+    git merge bname
+    git branch -d bname
+    git branch
